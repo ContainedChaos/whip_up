@@ -13,6 +13,7 @@ import 'package:whip_up/components/rounded_password_field.dart';
 import 'package:whip_up/Screens/Signup/api_service.dart';
 import 'package:whip_up/Screens/Welcome/welcome_screen.dart';
 import 'package:whip_up/services/auth_service.dart';
+import 'package:whip_up/Screens/ProfilePage/profile_screen.dart';
 
 class Body extends StatefulWidget {
   @override
@@ -101,15 +102,16 @@ class _BodyState extends State<Body> {
                   String accessToken = result['access_token'];
                   AuthService()
                       .storeUserData(userId, userEmail, userName, accessToken);
-                  print(result['access_token']);
-                  var data = await AuthService().getUserData();
-                  print(data['access_token']);
+                  // print(result['access_token']);
+                  // var data = await AuthService().getUserData();
+                  // print(data['access_token']);
                   // Navigate to WelcomeScreen after successful login
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
                           HomeScreen(username: userName, userId: userId),
+                          // ProfileScreen(email: _email),
                     ),
                   );
                 } else if (result['detail'] == 'No verified account with this email.') {

@@ -1,54 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:whip_up/model/user.dart';
 
 class ApiService {
   final String baseUrl =
-      'http://localhost:8000'; // Replace with your server address
+      'http://192.168.0.103:8000'; // Replace with your server address
 
-  // Future<void> signup(String email, String password) async {
-
-  //   final response = await http.post(
-  //   Uri.parse('http://localhost:8000/signup/'),
-  //   headers: <String, String>{
-  //     'Content-Type': 'application/json; charset=UTF-8',
-  //   },
-  //   body: jsonEncode({'email': email, 'password': password}),
-  // );
-
-  //   print("welcome");
-  //   print(json.decode(response.body));
-
-  // }
-
-//   Future<Map<String, dynamic>> signup(String email, String password) async {
-//   try {
-//     final response = await http.post(
-//       Uri.parse('http://localhost:8000/signup/'),
-//       headers: <String, String>{
-//         'Content-Type': 'application/json; charset=UTF-8',
-//       },
-//       body: jsonEncode({'email': email, 'password': password}),
-//     );
-
-//     if (response.statusCode == 200) { // Success status code
-//       print("welcome");
-//       print(json.decode(response.body));
-//       return json.decode(response.body);
-//     } else {
-//       // Handle server-side error
-//       throw Exception('Failed to signup: ${response.body}');
-//     }
-//   } catch (e) {
-//     print('Error during signup: $e');
-//     // You can throw the error again if you want the caller to know about it
-//     throw Exception('Failed to signup due to a network error.');
-//   }
-// }
 
   Future<Map<String, dynamic>> signup(
       String username, String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://192.168.0.104:8000/signup/'),
+      Uri.parse('http://192.168.0.103:8000/signup/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(
           {'username': username, 'email': email, 'password': password}),
@@ -70,7 +32,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://192.168.0.104:8000/login/'),
+      Uri.parse('http://192.168.0.103:8000/login/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({"email": email, "password": password}),
     );
@@ -86,4 +48,35 @@ class ApiService {
       throw Exception('Failed to login. Please try again.');
     }
   }
+  // Fetch User Profile
+  Future<User> fetchUserProfile(String email) async {
+    final response = await http.get(
+      Uri.parse('http://192.168.0.103:8000/profile/$email/'),
+    );
+
+    if (response.statusCode == 200) {
+      return User.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load profile');
+    }
+  }
+
+// Edit User Profile
+  Future<void> editUserProfile(String originalEmail, String newEmail, String newUsername) async {
+    final response = await http.put(
+      Uri.parse('http://192.168.0.103:8000/profile/$originalEmail/'),  // Adjusted the URL here
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'originalEmail': originalEmail,  // This might not be necessary since you're already passing the originalEmail in the URL.
+        'newEmail': newEmail,
+        'newUsername': newUsername
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to edit profile');
+    }
+  }
+
+
 }
