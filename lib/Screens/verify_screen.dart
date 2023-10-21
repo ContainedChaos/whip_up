@@ -72,7 +72,6 @@ class _VerifyScreenState extends State<VerifyScreen> {
             Text('Enter OTP received in your email'),
             TextField(
               controller: otpController,
-              keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: 'OTP'),
             ),
             Text('User ID: ${widget.userId}'),

@@ -93,7 +93,6 @@ class _BodyState extends State<Body> {
               final apiService = ApiService();
               try {
                 var result = await apiService.loginUser(_email, _password);
-                print(result);
                 // Assuming 'result' contains a message or status indicating a successful login
                 if (result['message'] == 'Login Successful') {
                   String userId = result['user_id'];
@@ -102,6 +101,9 @@ class _BodyState extends State<Body> {
                   String accessToken = result['access_token'];
                   AuthService()
                       .storeUserData(userId, userEmail, userName, accessToken);
+                  print(result['access_token']);
+                  var data = await AuthService().getUserData();
+                  print(data['access_token']);
                   // Navigate to WelcomeScreen after successful login
                   Navigator.pushReplacement(
                     context,
@@ -110,17 +112,22 @@ class _BodyState extends State<Body> {
                           HomeScreen(username: userName, userId: userId),
                     ),
                   );
-                } else if (result['message'] == 'Please verify your email') {
+                } else if (result['detail'] == 'No verified account with this email.') {
+                  print("Here in print of 404");
                   // Show a message to the user indicating that they need to verify their email
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(result['message'])),
+                    SnackBar(
+                      content: Text('No verified account with this email'),
+                      backgroundColor: Colors.red,
+                    ),
                   );
                 }
               } catch (error) {
                 print(error);
                 // Show an error message to the user, using a Snackbar.
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(error.toString())),
+                  SnackBar(content: Text("Invalid email or password"),
+                    backgroundColor: Colors.red,),
                 );
               }
             },

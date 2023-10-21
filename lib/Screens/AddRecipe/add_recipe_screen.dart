@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import '../../services/auth_service.dart';
 import 'cook_time_input.dart';
 import 'package:http/http.dart' as http;
 
@@ -494,11 +495,18 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
       "imageUrl": imageUrl,
     };
 
+    final Map<String, dynamic> userData = await AuthService().getUserData();
+    final String accessToken = userData['access_token'];
+    print(accessToken);
+
     try {
       final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(recipeData),
+          Uri.parse(apiUrl),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $accessToken", // Include the access token
+          },
+          body: jsonEncode(recipeData)
       );
 
       if (response.statusCode == 200) {

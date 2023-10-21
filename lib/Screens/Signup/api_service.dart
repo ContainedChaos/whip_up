@@ -77,8 +77,12 @@ class ApiService {
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
+    } else if (response.statusCode == 404) {
+      print("Here in 404");
+      return jsonDecode(response.body);
     } else {
       print('Error response: ${response.body}');
+      print("Here in exception");
       throw Exception('Failed to login. Please try again.');
     }
   }
