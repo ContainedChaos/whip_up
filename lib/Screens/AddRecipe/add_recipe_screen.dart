@@ -1,8 +1,8 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import 'cook_time_input.dart';
@@ -74,23 +74,54 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Recipe Details'),
+        backgroundColor: Colors.teal.shade900,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(25.0),
         child: ListView(
           children: [
+            SizedBox(height: 10), // Add margin at the beginning
             TextFormField(
               // ... (Recipe Title)
-              decoration: InputDecoration(labelText: 'Recipe Title'),
+              decoration: InputDecoration(
+                  labelText: 'Recipe Title',
+                  labelStyle: TextStyle(
+                  color: Colors.teal.shade800,
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                      color: Colors.teal.shade800,
+                      width: 2.0,
+                  ), // Change the color of the line when focused
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.teal.shade600), // Change the color of the line when enabled
+                ),
+              ),
               onChanged: (value) {
                 setState(() {
                   title = value;
                 });
               },
             ),
+            SizedBox(height: 16), // Add spacing between fields
             TextFormField(
               // ... (Number of Servings)
-              decoration: InputDecoration(labelText: 'Number of Servings'),
+              decoration: InputDecoration(
+                  labelText: 'Number of Servings',
+                  labelStyle: TextStyle(
+                  color: Colors.teal.shade800,
+              ),
+              focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                  color: Colors.teal.shade800,
+                  width: 2.0,
+                ), // Change the color of the line when focused
+              ),
+              enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.teal.shade600), // Change the color of the line when enabled
+              ),
+              ),
               keyboardType: TextInputType.number,
               onChanged: (value) {
                 setState(() {
@@ -98,61 +129,105 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                 });
               },
             ),
-            // ... (Difficulty dropdown)
-            Text(
-              'Difficulty',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Wrap(
-              children: availableDifficulties.map((difficultyOption) {
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      difficulty = difficultyOption;
-                    });
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(8),
-                    margin: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: difficulty == difficultyOption
-                            ? Colors
-                                .blue // Use a different color for the selected option
-                            : Colors.grey,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(difficultyOption),
+            SizedBox(height: 20),
+            // ... Difficulty dropdown
+            Row(
+              children: [
+                Text(
+                  'Difficulty',
+                  style: TextStyle(
+                    color: Colors.teal.shade800,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
                   ),
-                );
-              }).toList(),
+                ),
+                SizedBox(width: 20), // Add spacing
+                Wrap(
+                  children: availableDifficulties.map((difficultyOption) {
+                    final isSelected = difficulty == difficultyOption;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          difficulty = difficultyOption;
+                        });
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(10),
+                        margin: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? _getDifficultyColor(difficultyOption)
+                              : Colors.white,
+                          border: Border.all(
+                            color: isSelected
+                                ? _getDifficultyColor(difficultyOption)
+                                : _getDifficultyColor(difficultyOption),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          difficultyOption,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: isSelected
+                                ? Colors.white
+                                : _getDifficultyColor(difficultyOption),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: CookTimeInput(
-                initialHours: selectedHours,
-                initialMinutes: selectedMinutes,
-                onHoursChanged: (hours) {
-                  setState(() {
-                    selectedHours = hours;
-                  });
-                },
-                onMinutesChanged: (minutes) {
-                  setState(() {
-                    selectedMinutes = minutes;
-                  });
-                },
-              ),
+            SizedBox(height: 16),
+            // ... Cook Time
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [ // Add spacing
+                Row(
+                  children: [
+                    Icon(
+                      Icons.access_time, // Add an icon
+                      size: 32,
+                      color: Colors.teal.shade800,// Icon size
+                    ),
+                    SizedBox(width: 13),
+                    CookTimeInput(
+                      initialHours: selectedHours,
+                      initialMinutes: selectedMinutes,
+                      onHoursChanged: (hours) {
+                        setState(() {
+                          selectedHours = hours;
+                        });
+                      },
+                      onMinutesChanged: (minutes) {
+                        setState(() {
+                          selectedMinutes = minutes;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
+            SizedBox(height: 30),
+        Container(
+          width: 100, // Set the desired width
+          child:
             DropdownButtonFormField<String>(
               value: cuisine,
+
               onChanged: (newValue) {
                 setState(() {
                   cuisine = newValue!;
                 });
               },
+              style: TextStyle(
+                color: Colors.teal.shade800,
+                fontSize: 17,
+              ),
               items: availableCuisines
                   .map<DropdownMenuItem<String>>((cuisineOption) {
                 return DropdownMenuItem<String>(
@@ -160,68 +235,130 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                   child: Text(cuisineOption),
                 );
               }).toList(),
-              decoration: InputDecoration(labelText: 'Cuisine'),
-            ),
-            Text(
-              'Tags',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Wrap(
-              children: [
-                for (final tag in availableTags)
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        if (selectedTags.contains(tag)) {
-                          selectedTags.remove(tag);
-                        } else {
-                          selectedTags.add(tag);
-                        }
-                      });
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(8),
-                      margin: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: selectedTags.contains(tag)
-                              ? Colors
-                                  .blue // Use a different color for selected tags
-                              : Colors.grey,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(tag),
-                    ),
+              decoration: InputDecoration(
+                labelText: 'Cuisine',
+                labelStyle: TextStyle(
+                  color: Colors.teal.shade800,
+                  fontSize: 17,// Change the color of the label text
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0), // Adjust the border radius as needed
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.teal.shade800, // Change the border color when focused
                   ),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.teal.shade600, // Change the border color when enabled
+                  ),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+            ),
+        ),
+            SizedBox(height: 16),
+            // ... Tags
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tags',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 8), // Add spacing
+                Wrap(
+                  children: [
+                    for (final tag in availableTags)
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (selectedTags.contains(tag)) {
+                              selectedTags.remove(tag);
+                            } else {
+                              selectedTags.add(tag);
+                            }
+                          });
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(8),
+                          margin: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: selectedTags.contains(tag)
+                                ? _getRandomTagColor()
+                                : Colors.white,
+                            border: Border.all(
+                              color: selectedTags.contains(tag)
+                                  ? _getRandomTagColor()
+                                  : Colors.grey,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(tag),
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
-
-            // ... (Next button)
+            SizedBox(height: 16),
+            // ... Next button
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => IngredientsAndStepsPage(
-                      title: title,
-                      servings: servings,
-                      difficulty: difficulty,
-                      cookTime: '$selectedHours hours $selectedMinutes minutes',
-                      userId: widget.userId,
-                      cuisine: cuisine,
-                      tags: selectedTags,
-                    ),
+                    builder: (context) =>
+                        IngredientsAndStepsPage(
+                          title: title,
+                          servings: servings,
+                          difficulty: difficulty,
+                          cookTime: '$selectedHours hours $selectedMinutes minutes',
+                          userId: widget.userId,
+                          cuisine: cuisine,
+                          tags: selectedTags,
+                        ),
                   ),
                 );
               },
+              style: ElevatedButton.styleFrom(
+                primary: Colors.teal.shade800, // Background color
+                onPrimary: Colors.white, // Text color
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0), // Border radius
+                ),
+                minimumSize: Size(200, 60), // Width and height
+              ),
               child: Text('Next'),
-            )
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Color _getDifficultyColor(String difficulty) {
+    switch (difficulty) {
+      case 'easy':
+        return Colors.green.shade700;
+      case 'medium':
+        return Colors.blue.shade800;
+      case 'hard':
+        return Colors.deepOrange.shade800;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _getRandomTagColor() {
+    final colors = [Colors.blue, Colors.red, Colors.green, Colors.purple];
+    return colors[Random().nextInt(colors.length)];
   }
 }
 

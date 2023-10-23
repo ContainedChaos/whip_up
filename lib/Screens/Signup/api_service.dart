@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:whip_up/model/user.dart';
+
+import '../../model/user.dart';
 
 class ApiService {
   final String baseUrl =
-      'http://192.168.0.103:8000'; // Replace with your server address
-
+      'http://192.168.2.103:8000'; // Replace with your server address
 
   Future<Map<String, dynamic>> signup(
       String username, String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://192.168.0.103:8000/signup/'),
+      Uri.parse('http://192.168.0.104:8000/signup/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(
           {'username': username, 'email': email, 'password': password}),
@@ -32,44 +32,27 @@ class ApiService {
 
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://192.168.0.103:8000/login/'),
+      Uri.parse('http://192.168.0.104:8000/login/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({"email": email, "password": password}),
     );
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
-    } else if (response.statusCode == 404) {
-      print("Here in 404");
-      return jsonDecode(response.body);
     } else {
       print('Error response: ${response.body}');
-      print("Here in exception");
       throw Exception('Failed to login. Please try again.');
     }
   }
-  // Fetch User Profile
-  Future<User> fetchUserProfile(String email) async {
-    final response = await http.get(
-      Uri.parse('http://192.168.0.103:8000/profile/$email/'),
-    );
 
-    if (response.statusCode == 200) {
-      return User.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to load profile');
-    }
-  }
-
-// Edit User Profile
-  Future<void> editUserProfile(String originalEmail, String newEmail, String newUsername) async {
+  // edit user profile
+  Future<void> editUserProfile(String originalEmail, String newUsername) async {
     final response = await http.put(
-      Uri.parse('http://192.168.0.103:8000/profile/$originalEmail/'),  // Adjusted the URL here
+      Uri.parse('http://192.168.0.104:8000/profile/$originalEmail/'),  // Adjusted the URL here
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'originalEmail': originalEmail,  // This might not be necessary since you're already passing the originalEmail in the URL.
-        'newEmail': newEmail,
-        'newUsername': newUsername
+        'originalEmail': originalEmail,
+        'username': newUsername
       }),
     );
 
@@ -78,5 +61,16 @@ class ApiService {
     }
   }
 
+  // fetch user profile
+  Future<User> fetchUserProfile(String email) async {
+    final response = await http.get(
+      Uri.parse('http://192.168.0.104:8000/profile/$email/'),
+    );
 
+    if (response.statusCode == 200) {
+      return User.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load profile');
+    }
+  }
 }

@@ -6,6 +6,9 @@ import 'package:whip_up/Screens/Welcome/welcome_screen.dart';
 // import 'package:whip_up/Screens/Welcome/welcome_screen.dart';
 import 'package:whip_up/constants.dart';
 import 'package:whip_up/core/route/app_route_name.dart';
+import 'package:whip_up/views/screens/auth/welcome_page.dart';
+import 'package:whip_up/views/screens/home_page.dart';
+import 'package:whip_up/views/screens/page_switcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,7 +27,7 @@ class MyApp extends StatelessWidget {
         primaryColor: kPrimaryColor,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: welcomeScreen(),
+      home: WelcomePage(),
       // routes: {
       //   AppRouteName.home: (context) => HomeScreen(),
       //   // Add other routes as needed

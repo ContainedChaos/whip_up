@@ -34,9 +34,17 @@ class _CookTimeInputState extends State<CookTimeInput> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox(
-          width: 150,
+        Container(
+          width: 140,
           height: 50,
+          decoration: BoxDecoration(
+            color: Colors.white, // Background color
+            borderRadius: BorderRadius.circular(8), // Rounded corners
+            border: Border.all(
+              color: Colors.white, // Border color
+              width: 1.0, // Border width
+            ),
+          ),
           child: Row(
             children: [
               IconButton(
@@ -57,6 +65,9 @@ class _CookTimeInputState extends State<CookTimeInput> {
                   onChanged: (value) {
                     widget.onHoursChanged(int.parse(value));
                   },
+                  decoration: InputDecoration(
+                    border: InputBorder.none, // Set the border to none
+                  ),
                 ),
               ),
               IconButton(
@@ -67,14 +78,22 @@ class _CookTimeInputState extends State<CookTimeInput> {
                 },
                 icon: Icon(Icons.add),
               ),
-              Text('Hours'),
+              Text('H    '),
             ],
           ),
         ),
         SizedBox(width: 16),
-        SizedBox(
-          width: 150,
+        Container(
+          width: 140,
           height: 50,
+          decoration: BoxDecoration(
+            color: Colors.white, // Background color
+            borderRadius: BorderRadius.circular(8), // Rounded corners
+            border: Border.all(
+              color: Colors.white, // Border color
+              width: 1.0, // Border width
+            ),
+          ),
           child: Row(
             children: [
               IconButton(
@@ -95,6 +114,9 @@ class _CookTimeInputState extends State<CookTimeInput> {
                   onChanged: (value) {
                     widget.onMinutesChanged(int.parse(value));
                   },
+                  decoration: InputDecoration(
+                    border: InputBorder.none, // Set the border to none
+                  ),
                 ),
               ),
               IconButton(
@@ -105,7 +127,7 @@ class _CookTimeInputState extends State<CookTimeInput> {
                 },
                 icon: Icon(Icons.add),
               ),
-              Text('Minutes'),
+              Text('M    '),
             ],
           ),
         ),

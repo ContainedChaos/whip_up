@@ -18,7 +18,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
   void verify() async {
     final response = await http.post(
-      Uri.parse('http://192.168.0.103:8000/verify-otp/'),
+      Uri.parse('http://192.168.0.104:8000/verify-otp/'),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         'user_id': widget.userId,
@@ -72,6 +72,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
             Text('Enter OTP received in your email'),
             TextField(
               controller: otpController,
+              keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: 'OTP'),
             ),
             Text('User ID: ${widget.userId}'),
