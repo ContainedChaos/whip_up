@@ -25,7 +25,10 @@ Future<List<MyRecipe>> fetchRecipes() async {
   final Map<String, dynamic> userData = await AuthService().getUserData(); // Use a default value or handle null properly.
 
   final response = await http.get(
-    Uri.parse(apiUrl)
+    Uri.parse(apiUrl),
+    headers: {
+      "Authorization": "Bearer $accessToken",
+    },
   );
 
   if (response.statusCode == 200) {

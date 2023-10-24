@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:whip_up/Screens/AddRecipe/add_recipe_screen.dart';
+import 'package:whip_up/Screens/AddRecipe/intermediary_screen.dart';
 import 'package:whip_up/views/screens/bookmarks_page.dart';
 import 'package:whip_up/views/screens/explore_page.dart';
 import 'package:whip_up/views/screens/home_page.dart';
 import 'package:whip_up/views/utils/AppColor.dart';
 import 'package:whip_up/views/widgets/custom_bottom_navigation_bar.dart';
+
+import 'my_recipes_page.dart';
 
 class PageSwitcher extends StatefulWidget {
   final String userEmail;
@@ -34,7 +37,9 @@ class _PageSwitcherState extends State<PageSwitcher> {
         children: [
           [
             HomePage(userEmail: widget.userEmail, userName: widget.userName),
-            RecipeDetailsPage(userId: widget.userId),
+            // RecipeDetailsPage(userId: widget.userId),
+            IntermediaryPage(userId: widget.userId),
+            MyRecipesPage(userId: widget.userId),
             BookmarksPage(),
           ][_selectedIndex],
           BottomGradientWidget(),
