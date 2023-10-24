@@ -22,14 +22,10 @@ import '../../services/auth_service.dart';
 Future<List<MyRecipe>> fetchRecipes() async {
   final apiUrl = 'http://192.168.0.104:8000/getrecipes/';
 
-  final Map<String, dynamic> userData = await AuthService().getUserData();
-  final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
+  final Map<String, dynamic> userData = await AuthService().getUserData(); // Use a default value or handle null properly.
 
   final response = await http.get(
-    Uri.parse(apiUrl),
-    headers: {
-      "Authorization": "Bearer $accessToken",
-    },
+    Uri.parse(apiUrl)
   );
 
   if (response.statusCode == 200) {
@@ -37,6 +33,7 @@ Future<List<MyRecipe>> fetchRecipes() async {
     List<Map<String, dynamic>> recipeData = List<Map<String, dynamic>>.from(data['recipes']);
 
     List<MyRecipe> recipes = recipeData.map((map) => MyRecipe(
+      id: map['_id'],
       userId: map['userId'],
       title: map['title'],
       servings: map['servings'],

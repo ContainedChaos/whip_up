@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -6,6 +8,9 @@ import 'package:whip_up/models/helper/recipe_helper.dart';
 import 'package:whip_up/views/utils/AppColor.dart';
 import 'package:whip_up/views/widgets/modals/search_filter_modal.dart';
 import 'package:whip_up/views/widgets/recipe_tile.dart';
+import 'package:http/http.dart' as http;
+import '../../models/core/myRecipe.dart';
+import '../../services/auth_service.dart';
 
 class BookmarksPage extends StatefulWidget {
   @override
@@ -14,7 +19,72 @@ class BookmarksPage extends StatefulWidget {
 
 class _BookmarksPageState extends State<BookmarksPage> {
   TextEditingController searchInputController = TextEditingController();
-  List<Recipe> bookmarkedRecipe = RecipeHelper.bookmarkedRecipe;
+  late Future<List<MyRecipe>> bookRecipes;
+
+  @override
+  void initState() {
+    super.initState();
+    bookRecipes = fetchBookmarkedRecipes();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    bookRecipes = fetchBookmarkedRecipes(); // Reload the data
+  }
+
+  Future<void> reloadBookmarks() async {
+    setState(() {
+      bookRecipes = fetchBookmarkedRecipes();
+    });
+  }
+
+
+  Future<List<MyRecipe>> fetchBookmarkedRecipes() async {
+    final apiUrl = 'http://192.168.0.106:8000/getbookmarkedrecipes/';
+
+    final Map<String, dynamic> userData = await AuthService().getUserData();
+    final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
+
+    final response = await http.get(
+      Uri.parse(apiUrl),
+      headers: {
+        "Authorization": "Bearer $accessToken",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      List<Map<String, dynamic>> recipeData = List<Map<String, dynamic>>.from(data['recipes']);
+
+      List<MyRecipe> bookRecipes = recipeData.map((map) => MyRecipe(
+        id: map['_id'],
+        userId: map['userId'],
+        title: map['title'],
+        servings: map['servings'],
+        difficulty: map['difficulty'],
+        cookTime: map['cookTime'],
+        cuisine: map['cuisine'],
+        tags: List<String>.from(map['tags']),
+        ingredients: (map['ingredients'] as List<dynamic>).map((ingredientMap) {
+          return RecipeIngredient(
+            name: ingredientMap['name'],
+            quantity: ingredientMap['quantity'],
+          );
+        }).toList(),
+        steps: (map['steps'] as List<dynamic>).map((stepMap) {
+          return RecipeStep(
+            description: stepMap['description'],
+          );
+        }).toList(),
+        imageUrl: map['imageUrl'],
+      )).toList();
+
+      return bookRecipes;
+    } else {
+      throw Exception('Failed to load recipes');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,109 +93,69 @@ class _BookmarksPageState extends State<BookmarksPage> {
         backgroundColor: AppColor.primary,
         centerTitle: false,
         elevation: 0,
-        title: Text('Bookmarks', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16)), systemOverlayStyle: SystemUiOverlayStyle.light,
+        title: Text('Bookmarks',
+            style: TextStyle(
+                fontFamily: 'inter',
+                fontWeight: FontWeight.w400,
+                fontSize: 16)),
+        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       body: ListView(
         shrinkWrap: true,
         physics: BouncingScrollPhysics(),
         children: [
-          // Section 1 - Search Bar
+          // Section 2 - Bookmarked Recipe
           Container(
+            padding: EdgeInsets.all(16),
             width: MediaQuery.of(context).size.width,
-            height: 95,
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            color: AppColor.primary,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Search Bar
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Search TextField
-                    Expanded(
-                      child: Container(
-                        height: 50,
-                        margin: EdgeInsets.only(right: 15),
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColor.primarySoft),
-                        child: TextField(
-                          controller: searchInputController,
-                          onChanged: (value) {
-                            print(searchInputController.text);
-                            setState(() {});
-                          },
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w400),
-                          maxLines: 1,
-                          textInputAction: TextInputAction.search,
-                          decoration: InputDecoration(
-                            hintText: 'What do you want to eat?',
-                            hintStyle: TextStyle(color: Colors.white.withOpacity(0.2)),
-                            prefixIconConstraints: BoxConstraints(maxHeight: 20),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 17),
-                            focusedBorder: InputBorder.none,
-                            border: InputBorder.none,
-                            prefixIcon: Visibility(
-                              visible: (searchInputController.text.isEmpty) ? true : false,
-                              child: Container(
-                                margin: EdgeInsets.only(left: 10, right: 12),
-                                child: SvgPicture.asset(
-                                  'assets/icons/search.svg',
-                                  width: 20,
-                                  height: 20,
-                                  color: Colors.white,
-                                ),
-                              ),
+            child: FutureBuilder<List<MyRecipe>>(
+              future: bookRecipes,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else {
+                  List<MyRecipe> bookmarkedRecipe = snapshot.data!;
+                  if (bookmarkedRecipe.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 280),
+                          Icon(
+                            Icons.bookmark,
+                            size: 48,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'No Bookmarked Recipes',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                    ),
-                    // Filter Button
-                    GestureDetector(
-                      onTap: () {
-                        showModalBottomSheet(
-                            context: context,
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
-                            builder: (context) {
-                              return SearchFilterModal();
-                            });
-                      },
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: AppColor.secondary,
-                        ),
-                        child: SvgPicture.asset('assets/icons/filter.svg'),
-                      ),
-                    )
-                  ],
-                ),
-              ],
+                    );
+                  }
+
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: bookmarkedRecipe.length,
+                    physics: NeverScrollableScrollPhysics(),
+                    separatorBuilder: (context, index) {
+                      return SizedBox(height: 16);
+                    },
+                    itemBuilder: (context, index) {
+                      return RecipeTile(data: bookmarkedRecipe[index]);
+                    },
+                  );
+                }
+              },
             ),
           ),
-          // Section 2 - Bookmarked Recipe
-          // Container(
-          //   padding: EdgeInsets.all(16),
-          //   width: MediaQuery.of(context).size.width,
-          //   child: ListView.separated(
-          //     shrinkWrap: true,
-          //     itemCount: bookmarkedRecipe.length,
-          //     physics: NeverScrollableScrollPhysics(),
-          //     separatorBuilder: (context, index) {
-          //       return SizedBox(height: 16);
-          //     },
-          //     itemBuilder: (context, index) {
-          //       return RecipeTile(
-          //         data: bookmarkedRecipe[index],
-          //       );
-          //     },
-          //   ),
-          // ),
         ],
       ),
     );

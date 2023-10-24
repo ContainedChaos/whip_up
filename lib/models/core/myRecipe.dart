@@ -17,6 +17,7 @@ class RecipeStep{
 }
 
 class MyRecipe {
+  final String id;
   final String userId;
   final String title;
   final int servings;
@@ -29,6 +30,7 @@ class MyRecipe {
   final String imageUrl;
 
   MyRecipe({
+    required this.id,
     required this.userId,
     required this.title,
     required this.servings,

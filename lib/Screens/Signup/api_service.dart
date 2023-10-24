@@ -40,19 +40,23 @@ class ApiService {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      print('Error response: ${response.body}');
-      throw Exception('Failed to login. Please try again.');
+      // print('Error response: ${response.body}');
+      return jsonDecode(response.body);
     }
   }
 
   // edit user profile
-  Future<void> editUserProfile(String originalEmail, String newUsername) async {
+  Future<void> editUserProfile(String originalEmail, String newUsername, String imageUrl) async {
+    print(originalEmail);
+    print(newUsername);
     final response = await http.put(
       Uri.parse('http://192.168.0.104:8000/profile/$originalEmail/'),  // Adjusted the URL here
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'originalEmail': originalEmail,
-        'username': newUsername
+        'username': newUsername,
+        'imageUrl': imageUrl,
+
       }),
     );
 

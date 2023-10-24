@@ -69,7 +69,7 @@ class _BodyState extends State<Body> {
                 final apiService = ApiService();
                 try {
                   var result = await apiService.loginUser(_email, _password);
-                  print(result);
+                  print(result['detail']);
 
                   // Check if 'message' is "Login Successful"
                   if (result['message'] == 'Login Successful') {
@@ -89,9 +89,13 @@ class _BodyState extends State<Body> {
                       ),
                     );
 
-                  } else if (result['message'] == 'Please verify your email') {
+                  } else if (result['detail'] == 'No verified account with this email.') {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(result['message'])),
+                      SnackBar(content: Text(result['detail'])),
+                    );
+                  } else if (result['detail'] == 'Invalid password.') {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(result['detail'])),
                     );
                   }
                 } catch (error) {

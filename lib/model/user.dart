@@ -9,7 +9,7 @@ class User {
     return User(
         email: json['email'],
         username: json['username'],
-        image: json['image']
+        image: json['imageUrl']
     );
   }
 }

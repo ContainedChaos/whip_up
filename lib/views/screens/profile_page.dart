@@ -7,6 +7,7 @@ import 'package:whip_up/views/widgets/user_info_tile.dart';
 import '../../Screens/ProfilePage/edit_profile_screen.dart';
 import '../../Screens/Signup/api_service.dart';
 import '../../model/user.dart';
+import 'dart:io'; // Import this for File class
 
 class ProfilePage extends StatefulWidget {
   final String userName;
@@ -103,20 +104,19 @@ class _ProfilePageState extends State<ProfilePage> {
                       color: Colors.grey,
                       borderRadius: BorderRadius.circular(100),
                     ),
-                    child: Icon(
+                    child: _user.image != null
+                        ? Image.file(
+                      File(_user.image!),
+                      height: 100,
+                      width: 100,
+                    )
+                        : Icon(
                       Icons.person, // Replace with the icon you want
                       size: 100, // Adjust the size of the icon as needed
                       color: Colors.white, // Set the color of the icon
                     ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Change Profile Picture', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w600, color: Colors.white)),
-                      SizedBox(width: 8),
-                      SvgPicture.asset('assets/icons/camera.svg', color: Colors.white),
-                    ],
-                  )
+
                 ],
               ),
             ),

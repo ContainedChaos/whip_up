@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,6 +11,9 @@ import 'package:whip_up/views/widgets/review_tile.dart';
 import 'package:whip_up/views/widgets/step_tile.dart';
 import 'dart:io';
 import '../../models/core/myRecipe.dart';
+import 'package:http/http.dart' as http;
+
+import '../../services/auth_service.dart';
 
 class RecipeDetailPage extends StatefulWidget {
   final MyRecipe data;
@@ -16,11 +21,16 @@ class RecipeDetailPage extends StatefulWidget {
 
   @override
   _RecipeDetailPageState createState() => _RecipeDetailPageState();
+
+
 }
 
 class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProviderStateMixin {
   late TabController _tabController;
   late ScrollController _scrollController;
+
+  bool? _isBookmarked;
+  String user_id = '';
 
   @override
   void initState() {
@@ -30,7 +40,57 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
     _scrollController.addListener(() {
       changeAppBarColor(_scrollController);
     });
+
+    AuthService().getUserData().then((userData) {
+      user_id = userData['user_id'] ?? 'default_user_id';
+      getBookmarks(user_id, widget.data.id).then((value) {
+        setState(() {
+          _isBookmarked = value;
+        });
+      }).catchError((error) {
+        print('Error: $error');
+      });
+    });
   }
+
+  Future<bool> getBookmarks(String user_id, String recipe_id) async {
+    final apiUrl = 'http://192.168.0.106:8000/getbookmark/$user_id/$recipe_id/';
+    final response = await http.get(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseData = json.decode(response.body);
+      String status = responseData['status'];
+      return status == "yes";
+    } else {
+      throw Exception('Failed to get bookmark status');
+    }
+  }
+
+  Future<void> bookmarkRecipe(String user_id, String recipe_id) async {
+    print("here");
+    final apiUrl = 'http://192.168.0.106:8000/bookmark/$user_id/$recipe_id/';
+    final response = await http.post(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseData = json.decode(response.body);
+      String status = responseData['status'];
+
+      if (status == 'bookmarked') {
+        // Update the _isBookmarked state based on the API response
+        setState(() {
+          _isBookmarked = true;
+        });
+      }
+      else if (status == 'unbookmarked') {
+        setState(() {
+          _isBookmarked = false;
+        });
+      }
+    } else {
+      throw Exception('Failed to bookmark recipe');
+    }
+  }
+
 
   Color appBarColor = Colors.transparent;
 
@@ -85,7 +145,22 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
               },
             ),
             actions: [
-              IconButton(onPressed: () {}, icon: SvgPicture.asset('assets/icons/bookmark.svg', color: Colors.white)),
+              IconButton(
+                onPressed: () {
+                  bookmarkRecipe(user_id, widget.data.id);
+                },
+                icon: SvgPicture.asset(
+                  _isBookmarked == true
+                      ? 'assets/icons/bookmark-filled.svg' // Show filled bookmark if _isBookmarked is true
+                      : 'assets/icons/bookmark.svg',       // Show regular bookmark if _isBookmarked is false
+                  color: _isBookmarked == true ? Colors.yellow.shade600 : Colors.white,
+                  width: 60, // Set the width of the icon
+                  height: 60,
+                ),
+              ),
+
+
+
             ], systemOverlayStyle: SystemUiOverlayStyle.light,
           ),
         ),
