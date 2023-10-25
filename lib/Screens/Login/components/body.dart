@@ -37,7 +37,8 @@ class _BodyState extends State<Body> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 30,
-                color: Colors.yellow.shade50,
+                fontFamily: 'serif',
+                color: Colors.white,
               ),
             ),
             SizedBox(
@@ -64,7 +65,7 @@ class _BodyState extends State<Body> {
             ),
             RoundedButton(
               text: "LOGIN",
-              textColor: const Color(0xFFEDE5CC),
+              textColor: Colors.white,
               press: () async {
                 final apiService = ApiService();
                 try {
@@ -77,7 +78,8 @@ class _BodyState extends State<Body> {
                     String userEmail = result['email'];
                     String userName = result['username'];
                     String accessToken = result['access_token'];
-                    AuthService().storeUserData(userId, userEmail, userName, accessToken);
+                    String image = result['imageUrl'];
+                    AuthService().storeUserData(userId, userEmail, userName, accessToken, image);
                     // Navigate to HomePage after successful login
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
@@ -132,11 +134,12 @@ class _BodyState extends State<Body> {
                 );
               },
               child: Container(
-                margin: EdgeInsets.only(top: 8.0), // Adjust the top margin as needed
+                margin: EdgeInsets.only(top: 12.0), // Adjust the top margin as needed
                 child: Text(
                   'Forgot Password?',
                   style: TextStyle(
-                    color: Colors.blue.shade300,
+                    color: Colors.blue.shade200,
+                    fontSize: 15,
                   ),
                 ),
               ),

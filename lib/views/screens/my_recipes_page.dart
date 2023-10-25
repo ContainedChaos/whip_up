@@ -32,7 +32,8 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
 
 
   Future<List<MyRecipe>> fetchMyRecipes() async {
-    final apiUrl = 'http://192.168.2.107:8000/getmyrecipes/';
+    final apiUrl = 'http://192.168.2.104'
+        ':8000/getmyrecipes/';
 
     final Map<String, dynamic> userData = await AuthService().getUserData();
     final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -81,14 +82,15 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColor.primary,
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.grey.shade900,
         centerTitle: false,
         elevation: 0,
         title: Text('My Recipes',
             style: TextStyle(
                 fontFamily: 'inter',
-                fontWeight: FontWeight.w400,
-                fontSize: 16)),
+                fontWeight: FontWeight.w500,
+                fontSize: 20)),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       body: ListView(
@@ -115,13 +117,13 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                         children: [
                           SizedBox(height: 280),
                           Icon(
-                            Icons.bookmark,
+                            Icons.no_food,
                             size: 48,
                             color: Colors.grey,
                           ),
                           SizedBox(height: 16),
                           Text(
-                            'No Bookmarked Recipes',
+                            'No recipes to show',
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.grey,

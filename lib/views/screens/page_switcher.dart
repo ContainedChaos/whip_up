@@ -31,21 +31,25 @@ class _PageSwitcherState extends State<PageSwitcher> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: Stack(
-        children: [
-          [
-            HomePage(userEmail: widget.userEmail, userName: widget.userName),
-            // RecipeDetailsPage(userId: widget.userId),
-            IntermediaryPage(userId: widget.userId),
-            MyRecipesPage(userId: widget.userId),
-            BookmarksPage(),
-          ][_selectedIndex],
-          BottomGradientWidget(),
-        ],
+    return WillPopScope(
+      onWillPop: () async {
+        return false;
+      },
+      child: Scaffold(
+        extendBody: true,
+        body: Stack(
+          children: [
+            [
+              HomePage(userEmail: widget.userEmail, userName: widget.userName),
+              RecipeDetailsPage(userId: widget.userId),
+              MyRecipesPage(userId: widget.userId),
+              BookmarksPage(),
+            ][_selectedIndex],
+            BottomGradientWidget(),
+          ],
+        ),
+        bottomNavigationBar: CustomBottomNavigationBar(onItemTapped: _onItemTapped, selectedIndex: _selectedIndex),
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(onItemTapped: _onItemTapped, selectedIndex: _selectedIndex),
     );
   }
 }
@@ -58,7 +62,7 @@ class BottomGradientWidget extends StatelessWidget {
       child: Container(
         width: MediaQuery.of(context).size.width,
         height: 150,
-        decoration: BoxDecoration(gradient: AppColor.bottomShadow),
+        decoration: BoxDecoration(gradient: AppColor.linearBlackBottom),
       ),
     );
   }

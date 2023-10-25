@@ -15,7 +15,7 @@ class ForgotPasswordScreen extends StatelessWidget {
     print(email);
 
     final response = await http.post(
-      Uri.parse('http://192.168.0.104:8000/send-otp/'),
+      Uri.parse('http://192.168.2.104:8000/send-otp/'),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         'email': email,
@@ -61,23 +61,38 @@ class ForgotPasswordScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Forgot Password'),
+        backgroundColor: Colors.grey.shade900,
       ),
+      backgroundColor: Colors.white,
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 30), // Add padding here
+              child: TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: 'Enter your email',
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
             SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () => sendOTP(context),
-              child: Text('Send OTP'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.grey.shade900, // Change the button color to grey
+                padding: EdgeInsets.all(16), // Add padding to the button
+              ),
+              child: Text(
+                'Send OTP',
+                style: TextStyle(
+                  fontSize: 14, // Increase the font size
+                  // You can set other text styles here if needed
+                ),
+              ),
             ),
           ],
         ),

@@ -5,14 +5,16 @@ class AuthService {
   static const String userEmailKey = 'user_email';
   static const String userNameKey = 'user_name';
   static const String userTokenKey = 'access_token';
+  static const String userImageKey = 'imageUrl';
 
   Future<void> storeUserData(String userId, String userEmail, String userName,
-      String accessToken) async {
+      String accessToken, String image) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString(userIdKey, userId);
     prefs.setString(userEmailKey, userEmail);
     prefs.setString(userNameKey, userName);
     prefs.setString(userTokenKey, accessToken);
+    prefs.setString(userImageKey, image);
   }
 
   Future<Map<String, String>> getUserData() async {
@@ -21,12 +23,14 @@ class AuthService {
     String? userEmail = prefs.getString(userEmailKey);
     String? userName = prefs.getString(userNameKey);
     String? accessToken = prefs.getString(userTokenKey);
+    String? profilePicture = prefs.getString(userImageKey);
 
     return {
       'user_id': userId ?? '',
       'user_email': userEmail ?? '',
       'user_name': userName ?? '',
       'access_token': accessToken ?? '',
+      'imageUrl': profilePicture ?? '',
     };
   }
 
@@ -36,5 +40,6 @@ class AuthService {
     await prefs.remove(userIdKey);
     await prefs.remove(userNameKey);
     await prefs.remove(userEmailKey);
+    await prefs.remove(userImageKey);
   }
 }

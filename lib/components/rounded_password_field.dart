@@ -67,7 +67,7 @@ class _RoundedPasswordFieldState extends State<RoundedPasswordField> {
           hintText: "Password",
           icon: const Icon(
             Icons.lock,
-            color: kPrimaryColor,
+            color: Colors.black87,
           ),
           suffixIcon: GestureDetector(
             onTap: () {
@@ -77,7 +77,7 @@ class _RoundedPasswordFieldState extends State<RoundedPasswordField> {
             },
             child: Icon(
               obscureText ? Icons.visibility : Icons.visibility_off,
-              color: kPrimaryColor,
+              color: Colors.black87,
             ),
           ),
           border: InputBorder.none,

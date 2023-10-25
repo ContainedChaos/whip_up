@@ -40,7 +40,7 @@ class _BodyState extends State<Body> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 30,
-                color: Colors.yellow.shade50,
+                color: Colors.white,
               ),
             ),
             SizedBox(height: 20),
@@ -71,7 +71,7 @@ class _BodyState extends State<Body> {
             ),
             RoundedButton(
               text: "SIGNUP",
-              textColor: const Color(0xFFEDE5CC),
+              textColor: Colors.white,
               press: () async {
                 errorMessages.clear();
                 // Validate email using a regular expression for a valid email format.

@@ -18,7 +18,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
   void verify() async {
     final response = await http.post(
-      Uri.parse('http://192.168.0.104:8000/verify-otp/'),
+      Uri.parse('http://192.168.2.104:8000/verify-otp/'),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         'user_id': widget.userId,
@@ -64,22 +64,32 @@ class _VerifyScreenState extends State<VerifyScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Verify Account'),
+        backgroundColor: Colors.grey.shade900,
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text('Enter OTP received in your email'),
-            TextField(
-              controller: otpController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'OTP'),
+            SizedBox(height: 250),
+            SizedBox(height: 10),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 60.0), // Adjust the padding as needed
+              child: TextField(
+                controller: otpController,
+                decoration: InputDecoration(
+                  labelText: 'Enter OTP received in your email',
+                  border: OutlineInputBorder(),
+                ),
+              ),
             ),
-            Text('User ID: ${widget.userId}'),
-            SizedBox(height: 20),
+            SizedBox(height: 15),
             ElevatedButton(
               onPressed: verify,
               child: Text('Verify'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.grey.shade900, // Change the button color to grey
+                minimumSize: Size(100, 50),
+              ),
             ),
           ],
         ),

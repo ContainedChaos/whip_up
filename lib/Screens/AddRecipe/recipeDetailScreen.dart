@@ -22,7 +22,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   }
 
   Future<Map<String, dynamic>> fetchRecipeById(String id) async {
-    final apiUrl = 'http://192.168.0.104:8000/getrecipe/$id';
+    final apiUrl = 'http://192.168.2.104:8000/getrecipe/$id';
 
     // Retrieve the access token
     final Map<String, dynamic> userData = await AuthService().getUserData();

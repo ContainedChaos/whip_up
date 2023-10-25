@@ -39,7 +39,7 @@ class FeaturedRecipeCard extends StatelessWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
             child: Container(
-              height: 80,
+              height: 95,
               padding: EdgeInsets.all(8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5),
@@ -60,31 +60,56 @@ class FeaturedRecipeCard extends StatelessWidget {
                     margin: EdgeInsets.only(top: 8),
                     child: Row(
                       children: [
-                        SvgPicture.asset(
-                          'assets/icons/fire-filled.svg',
+                        Image.asset(
+                          'assets/icons/performance.png',
                           color: Colors.white,
-                          width: 12,
-                          height: 12,
+                          width: 18,
+                          height: 18,
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(left: 5),
+                          child: Text(
+                            data.difficulty,
+                            style: TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                        ),
+                        SizedBox(width: 25),
+                        Image.asset(
+                          'assets/icons/wedding-dinner.png',
+                          color: Colors.white,
+                          width: 18,
+                          height: 18,
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(left: 5),
+                          child: Text(
+                            data.servings.toString(),
+                            style: TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: 8),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/icons/serving-dish.png',
+                          color: Colors.white,
+                          width: 18,
+                          height: 18,
                         ),
                         Container(
                           margin: EdgeInsets.only(left: 5),
                           child: Text(
                             data.cuisine,
-                            style: TextStyle(color: Colors.white, fontSize: 10),
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Icon(Icons.alarm, size: 12, color: Colors.white),
-                        Container(
-                          margin: EdgeInsets.only(left: 5),
-                          child: Text(
-                            data.difficulty,
-                            style: TextStyle(color: Colors.white, fontSize: 10),
+                            style: TextStyle(color: Colors.white, fontSize: 12),
                           ),
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

@@ -22,7 +22,7 @@ class RecipeTile extends StatelessWidget {
         height: 90,
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColor.whiteSoft,
+          color: AppColor.secondary,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -58,7 +58,7 @@ class RecipeTile extends StatelessWidget {
                     Row(
                       children: [
                         SvgPicture.asset(
-                          'assets/icons/fire-filled.svg',
+                          'assets/icons/turkey.svg',
                           color: Colors.black,
                           width: 12,
                           height: 12,
@@ -74,7 +74,7 @@ class RecipeTile extends StatelessWidget {
                           width: 10,
                         ),
                         Icon(
-                          Icons.alarm,
+                          Icons.lock_clock,
                           size: 14,
                           color: Colors.black,
                         ),

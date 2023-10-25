@@ -54,7 +54,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
   }
 
   Future<bool> getBookmarks(String user_id, String recipe_id) async {
-    final apiUrl = 'http://192.168.0.106:8000/getbookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.104:8000/getbookmark/$user_id/$recipe_id/';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -68,7 +68,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   Future<void> bookmarkRecipe(String user_id, String recipe_id) async {
     print("here");
-    final apiUrl = 'http://192.168.0.106:8000/bookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.104:8000/bookmark/$user_id/$recipe_id/';
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -137,7 +137,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,
-            title: Text('Search Recipe', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16)),
+            title: Text('Recipe', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16)),
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios, color: Colors.white),
               onPressed: () {
@@ -158,9 +158,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                   height: 60,
                 ),
               ),
-
-
-
             ], systemOverlayStyle: SystemUiOverlayStyle.light,
           ),
         ),
@@ -208,7 +205,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                                 onPressed: () {},
                                 child: Text('Post Review'),
                                 style: ElevatedButton.styleFrom(
-                                  primary: AppColor.primary,
+                                  primary: Colors.grey.shade900,
                                 ),
                               ),
                             ),
@@ -220,7 +217,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                 });
           },
           child: Icon(Icons.edit),
-          backgroundColor: AppColor.primary,
+          backgroundColor: Colors.grey.shade900,
         ),
       ),
       body: ListView(
@@ -252,7 +249,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
           Container(
             width: MediaQuery.of(context).size.width,
             padding: EdgeInsets.only(top: 20, bottom: 30, left: 16, right: 16),
-            color: AppColor.primary,
+            color: Colors.grey.shade900,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,26 +257,45 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                 // Recipe Calories and Time
                 Row(
                   children: [
-                    SvgPicture.asset(
-                      'assets/icons/fire-filled.svg',
+                    Image.asset(
+                      'assets/icons/serving-dish.png',
                       color: Colors.white,
-                      width: 16,
-                      height: 16,
+                      width: 20,
+                      height: 20,
                     ),
                     Container(
-                      margin: EdgeInsets.only(left: 5),
+                      margin: EdgeInsets.only(left: 7),
                       child: Text(
                         widget.data.cuisine,
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                        style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
                     ),
-                    SizedBox(width: 10),
-                    Icon(Icons.alarm, size: 16, color: Colors.white),
+                    SizedBox(width: 20),
+                    Image.asset(
+                      'assets/icons/performance.png',
+                      color: Colors.white,
+                      width: 18,
+                      height: 18,
+                    ),
                     Container(
-                      margin: EdgeInsets.only(left: 5),
+                      margin: EdgeInsets.only(left: 7),
                       child: Text(
                         widget.data.difficulty,
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                    ),
+                    SizedBox(width: 20),
+                    Image.asset(
+                      'assets/icons/wedding-dinner.png',
+                      color: Colors.white,
+                      width: 20,
+                      height: 20,
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(left: 7),
+                      child: Text(
+                        widget.data.servings.toString(),
+                        style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
                     ),
                   ],
@@ -293,9 +309,42 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                   ),
                 ),
                 // Recipe Description
-                Text(
-                  widget.data.cookTime,
-                  style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14, height: 150 / 100),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.access_alarm, // Use the alarm icon
+                      color: Colors.white, // Customize the color if needed
+                      size: 18, // Customize the size if needed
+                    ),
+                    SizedBox(width: 7),
+                    Text(
+                      widget.data.cookTime,
+                      style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 15),
+                Wrap(
+                  children: widget.data.tags.map((tag) {
+                    return Container(
+                      margin: EdgeInsets.only(right: 17),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade800, // Customize the color
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.white, // Customize the border color
+                          width: 1, // Customize the border width
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8), // Add padding here
+                        child: Text(
+                          tag,
+                          style: TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ],
             ),
@@ -318,7 +367,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
               indicatorColor: Colors.black,
               tabs: [
                 Tab(
-                  text: 'Ingridients',
+                  text: 'Ingredients',
                 ),
                 Tab(
                   text: 'Tutorial',

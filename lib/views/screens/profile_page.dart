@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:whip_up/Screens/Login/login_screen.dart';
+import 'package:whip_up/views/screens/auth/welcome_page.dart';
 import 'package:whip_up/views/utils/AppColor.dart';
 import 'package:whip_up/views/widgets/user_info_tile.dart';
 
 import '../../Screens/ProfilePage/edit_profile_screen.dart';
 import '../../Screens/Signup/api_service.dart';
 import '../../model/user.dart';
-import 'dart:io'; // Import this for File class
+import 'dart:io';
+
+import '../../services/auth_service.dart'; // Import this for File class
 
 class ProfilePage extends StatefulWidget {
   final String userName;
@@ -50,7 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColor.primary,
+        backgroundColor: Colors.grey.shade900,
         elevation: 0,
         centerTitle: true,
         title: Text('My Profile', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16)),
@@ -86,12 +90,9 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           // Section 1 - Profile Picture Wrapper
           Container(
-            color: AppColor.primary,
+            color: Colors.grey.shade900,
             padding: EdgeInsets.symmetric(vertical: 24),
             child: GestureDetector(
-              onTap: () {
-                print('Code to open file manager');
-              },
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -102,21 +103,24 @@ class _ProfilePageState extends State<ProfilePage> {
                     margin: EdgeInsets.only(bottom: 15),
                     decoration: BoxDecoration(
                       color: Colors.grey,
-                      borderRadius: BorderRadius.circular(100),
+                      shape: BoxShape.circle, // Define a circular shape
                     ),
-                    child: _user.image != null
-                        ? Image.file(
-                      File(_user.image!),
-                      height: 100,
-                      width: 100,
-                    )
-                        : Icon(
-                      Icons.person, // Replace with the icon you want
-                      size: 100, // Adjust the size of the icon as needed
-                      color: Colors.white, // Set the color of the icon
+                    child: ClipOval(
+                      child: _user.image != ""
+                          ? Image.file(
+                        File(_user.image!),
+                        height: 130,
+                        width: 130,
+                        fit: BoxFit.cover, // Make the image fill the circle
+                      )
+                          : Image.asset(
+                        'assets/images/pp.jpg',
+                        height: 130,
+                        width: 130,
+                        fit: BoxFit.cover, // Make the image asset fill the circle
+                      ),
                     ),
                   ),
-
                 ],
               ),
             ),
@@ -142,16 +146,47 @@ class _ProfilePageState extends State<ProfilePage> {
                 UserInfoTile(
                   margin: EdgeInsets.only(bottom: 16),
                   label: 'Bio',
-                  value: 'I love food <3',
+                  value: _user.bio.toString(),
                 ),
-                // UserInfoTile(
-                //   margin: EdgeInsets.only(bottom: 16),
-                //   label: 'Subscription Time',
-                //   value: 'Until 22 Oct 2021',
-                // ),
               ],
             ),
-          )
+          ),
+          SizedBox(height: 100),
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                AuthService().clearUserData();
+                // Add your logout logic here
+                // For example, you can navigate to the login page.
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => WelcomePage(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                primary: Colors.grey.shade900, // Change the button color to grey
+                padding: EdgeInsets.all(16), // Add padding to the button
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.logout, // Replace with the logout icon you want
+                    size: 24, // Adjust the size of the icon as needed
+                  ),
+                  SizedBox(width: 8), // Add spacing between the icon and text
+                  Text(
+                    'Log Out',
+                    style: TextStyle(
+                      fontSize: 14, // Increase the font size
+                      // You can set other text styles here if needed
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

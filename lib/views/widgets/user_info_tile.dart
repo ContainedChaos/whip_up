@@ -24,7 +24,7 @@ class UserInfoTile extends StatelessWidget {
             margin: EdgeInsets.only(top: 6),
             width: MediaQuery.of(context).size.width,
             padding: EdgeInsets.all(16),
-            color: valueBackground ?? AppColor.primaryExtraSoft,
+            color: valueBackground ?? AppColor.secondary.withOpacity(0.5),
             child: Text('$value', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'inter')),
           )
         ],

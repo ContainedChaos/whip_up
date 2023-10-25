@@ -32,16 +32,16 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
             elevation: 0,
             items: [
               (widget.selectedIndex == 0)
-                  ? BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/home-filled.svg', color: AppColor.primary), label: '')
+                  ? BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/home-filled.svg', color: Colors.grey.shade800), label: '')
                   : BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/home.svg', color: Colors.grey[600]), label: ''),
               (widget.selectedIndex == 1)
-                  ? BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/add-document-filled.svg', color: AppColor.primary, height: 22, width: 24), label: '')
+                  ? BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/add-document-filled.svg', color: Colors.grey.shade800, height: 22, width: 24), label: '')
                   : BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/add-document.svg', color: Colors.grey[600], height: 22, width: 24), label: ''),
               (widget.selectedIndex == 2)
-                  ? BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/notebook.svg', color: AppColor.primary), label: '')
-                  : BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/fire-filled.svg', color: Colors.grey[600]), label: ''),
+                  ? BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/notebook-filled.svg', color: Colors.grey.shade800), label: '')
+                  : BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/notebook.svg', color: Colors.grey[600]), label: ''),
               (widget.selectedIndex == 3)
-                  ? BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/bookmark-filled.svg', color: AppColor.primary), label: '')
+                  ? BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/bookmark-filled.svg', color: Colors.grey.shade800), label: '')
                   : BottomNavigationBarItem(icon: SvgPicture.asset('assets/icons/bookmark.svg', color: Colors.grey[600]), label: ''),
             ],
           ),

@@ -25,14 +25,6 @@ class StepTile extends StatelessWidget {
             data.description,
             style: TextStyle(color: Colors.black, fontFamily: 'inter', fontSize: 16, fontWeight: FontWeight.w600),
           ),
-          if (data.description != null) // Use 'if' for conditional rendering
-            Container(
-              margin: EdgeInsets.only(top: 10),
-              child: Text(
-                data.description,
-                style: TextStyle(color: Colors.black.withOpacity(0.8), fontWeight: FontWeight.w500, height: 150 / 100),
-              ),
-            ),
         ],
       ),
     );

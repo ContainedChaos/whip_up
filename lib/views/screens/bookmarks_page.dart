@@ -37,11 +37,12 @@ class _BookmarksPageState extends State<BookmarksPage> {
     setState(() {
       bookRecipes = fetchBookmarkedRecipes();
     });
+    await Future.delayed(Duration(seconds: 2));
   }
 
 
   Future<List<MyRecipe>> fetchBookmarkedRecipes() async {
-    final apiUrl = 'http://192.168.0.106:8000/getbookmarkedrecipes/';
+    final apiUrl = 'http://192.168.2.104:8000/getbookmarkedrecipes/';
 
     final Map<String, dynamic> userData = await AuthService().getUserData();
     final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -85,79 +86,87 @@ class _BookmarksPageState extends State<BookmarksPage> {
       throw Exception('Failed to load recipes');
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColor.primary,
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.grey.shade900,
         centerTitle: false,
         elevation: 0,
         title: Text('Bookmarks',
             style: TextStyle(
                 fontFamily: 'inter',
-                fontWeight: FontWeight.w400,
-                fontSize: 16)),
+                fontWeight: FontWeight.w500,
+                fontSize: 20)),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
-      body: ListView(
-        shrinkWrap: true,
-        physics: BouncingScrollPhysics(),
-        children: [
-          // Section 2 - Bookmarked Recipe
-          Container(
+      body: GestureDetector(
+        onVerticalDragDown: (details) {
+          print("Drag detected!");  // Debug log for drag detection
+        },
+        child: RefreshIndicator(
+          onRefresh: () async {
+            print("RefreshIndicator triggered!");  // Debug log
+            return reloadBookmarks();
+          },
+          child: ListView.builder(
+            // physics: BouncingScrollPhysics(),
             padding: EdgeInsets.all(16),
-            width: MediaQuery.of(context).size.width,
-            child: FutureBuilder<List<MyRecipe>>(
-              future: bookRecipes,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else {
-                  List<MyRecipe> bookmarkedRecipe = snapshot.data!;
-                  if (bookmarkedRecipe.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(height: 280),
-                          Icon(
-                            Icons.bookmark,
-                            size: 48,
-                            color: Colors.grey,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'No Bookmarked Recipes',
-                            style: TextStyle(
-                              fontSize: 16,
+            itemCount: 1,
+            itemBuilder: (context, index) {
+              return FutureBuilder<List<MyRecipe>>(
+                future: bookRecipes,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else {
+                    List<MyRecipe> bookmarkedRecipe = snapshot.data!;
+                    if (bookmarkedRecipe.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 280),
+                            Icon(
+                              Icons.bookmark,
+                              size: 48,
                               color: Colors.grey,
                             ),
-                          ),
-                        ],
-                      ),
+                            SizedBox(height: 16),
+                            Text(
+                              'No Bookmarked Recipes',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: bookmarkedRecipe.length,
+                      separatorBuilder: (context, index) {
+                        return SizedBox(height: 16);
+                      },
+                      itemBuilder: (context, index) {
+                        return RecipeTile(data: bookmarkedRecipe[index]);
+                      },
                     );
                   }
-
-                  return ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: bookmarkedRecipe.length,
-                    physics: NeverScrollableScrollPhysics(),
-                    separatorBuilder: (context, index) {
-                      return SizedBox(height: 16);
-                    },
-                    itemBuilder: (context, index) {
-                      return RecipeTile(data: bookmarkedRecipe[index]);
-                    },
-                  );
-                }
-              },
-            ),
+                },
+              );
+            },
           ),
-        ],
+        ),
       ),
     );
   }
+
 }

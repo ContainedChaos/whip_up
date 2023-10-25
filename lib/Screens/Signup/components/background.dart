@@ -35,9 +35,9 @@ class Background extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.teal.shade900.withOpacity(0.55), // Top color with opacity
+                  Colors.black45.withOpacity(0.6), // Top color with opacity
                   // Colors.transparent, // Middle color (transparent)
-                  Colors.teal.shade900.withOpacity(0.55), // Bottom color with opacity
+                  Colors.black45.withOpacity(0.6), // Bottom color with opacity
                 ], // Define stops for each color
               ),
             ),

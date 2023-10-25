@@ -21,7 +21,7 @@ class _SearchPageState extends State<SearchPage> {
     print(searchInputController.text.isEmpty);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColor.primary,
+        backgroundColor: Colors.grey.shade900,
         elevation: 0,
         centerTitle: true,
         title: Text('Search Recipe', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16)),
@@ -40,7 +40,7 @@ class _SearchPageState extends State<SearchPage> {
           Container(
             width: MediaQuery.of(context).size.width,
             height: 145,
-            color: AppColor.primary,
+            color: Colors.grey.shade900,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,7 +56,7 @@ class _SearchPageState extends State<SearchPage> {
                         child: Container(
                           height: 50,
                           margin: EdgeInsets.only(right: 15),
-                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColor.primarySoft),
+                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.grey.shade800),
                           child: TextField(
                             controller: searchInputController,
                             onChanged: (value) {
@@ -68,7 +68,7 @@ class _SearchPageState extends State<SearchPage> {
                             textInputAction: TextInputAction.search,
                             decoration: InputDecoration(
                               hintText: 'What do you want to eat?',
-                              hintStyle: TextStyle(color: Colors.white.withOpacity(0.2)),
+                              hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
                               prefixIconConstraints: BoxConstraints(maxHeight: 20),
                               contentPadding: EdgeInsets.symmetric(horizontal: 17),
                               focusedBorder: InputBorder.none,

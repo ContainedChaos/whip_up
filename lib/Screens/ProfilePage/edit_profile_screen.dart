@@ -18,18 +18,20 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   TextEditingController _usernameController = TextEditingController();
+  TextEditingController _bioController = TextEditingController();
+  File? selectedImage;
 
   @override
   void initState() {
     super.initState();
     _usernameController.text = widget.user.username;
-
+    _bioController.text = widget.user.bio.toString();
   }
 
-  File? selectedImage;
-  String uploadsPath = '';  // Define uploadsPath at the class level
+  String uploadsPath = '';
   String imageName = '';
   String imageUrl = '';
+  String bio = '';
 
   Future<void> _copyImageToUploadsFolder(File selectedImage) async {
     try {
@@ -41,8 +43,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           await Directory(uploadsPath).create(recursive: true);
         }
 
-        imageName =
-        'user_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        imageName = 'user_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
         File newImage = await selectedImage.copy('$uploadsPath/$imageName');
 
         print("Image copied to: $uploadsPath/$imageName");
@@ -76,93 +77,129 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: Colors.teal.shade900,
-          title: Text("Edit Profile")),
+        backgroundColor: Colors.grey.shade900,
+        title: Text("Edit Profile"),
+        automaticallyImplyLeading: false,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
-            Container(
-              color: AppColor.primary,
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: _getImage,
-                    child: Container(
-                      width: 130,
-                      height: 130,
-                      margin: EdgeInsets.only(bottom: 15),
-                      decoration: BoxDecoration(
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: widget.user.image != null
-                          ? Image.file(
-                        File(widget.user.image!),
-                        height: 100,
-                        width: 100,
-                      )
-                          : Icon(
-                        Icons.person,
-                        size: 100,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: _getImage,
-                        child: Text(
-                          'Change Profile Picture',
-                          style: TextStyle(
-                            fontFamily: 'inter',
-                            fontWeight: FontWeight.w600,
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    // Updated onTap callback to immediately replace the image
+                    _getImage();
+                  },
+                  child: Container(
+                    width: 130,
+                    height: 130,
+                    margin: EdgeInsets.only(bottom: 15),
+                    child: Stack(
+                      children: [
+                        ClipOval(
+                          child: selectedImage != null
+                              ? Image.file(
+                            selectedImage!,
+                            height: 130,
+                            width: 130,
+                            fit: BoxFit.cover,
+                          )
+                              : (widget.user.image != null
+                              ? Image.file(
+                            File(widget.user.image!),
+                            height: 130,
+                            width: 130,
+                            fit: BoxFit.cover,
+                          )
+                              : Icon(
+                            Icons.person,
+                            size: 100,
                             color: Colors.white,
+                          )),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: ClipOval(
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              color: Colors.grey.shade600,
+                              child: Center(
+                                child: Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                      selectedImage != null
-                          ? Image.file(selectedImage!, height: 200, width: 200)
-                          : const Text("Please select an image"),
-                      SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: _getImage,
-                        child: SvgPicture.asset(
-                          'assets/icons/camera.svg',
+                      ],
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: _getImage,
+                      child: Text(
+                        'Change Profile Picture',
+                        style: TextStyle(
+                          fontFamily: 'inter',
+                          fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                    SizedBox(width: 8),
+                  ],
+                ),
+              ],
             ),
 
-
-
-            SizedBox(height: 20),
             TextField(
               controller: _usernameController,
               decoration: InputDecoration(
                 labelText: "Username",
                 labelStyle: TextStyle(
-                  color: Colors.teal.shade800, // Change the label text color
+                  color: Colors.grey.shade800, // Change the label text color
                   fontSize: 17,
                 ),
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                    color: Colors.teal.shade700, // Change the border color when focused
+                    color: Colors.grey.shade700, // Change the border color when focused
                     width: 2.0,
                   ),
                 ),
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                    color: Colors.teal.shade600, // Change the border color when enabled
+                    color: Colors.grey.shade600, // Change the border color when enabled
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 30),
+            TextField(
+              controller: _bioController,
+              decoration: InputDecoration(
+                labelText: "Bio",
+                labelStyle: TextStyle(
+                  color: Colors.grey.shade800, // Change the label text color
+                  fontSize: 17,
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey.shade700, // Change the border color when focused
+                    width: 2.0,
+                  ),
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey.shade600, // Change the border color when enabled
                   ),
                 ),
               ),
@@ -175,6 +212,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       widget.user.email,
                       _usernameController.text,
                       imageUrl,
+                      _bioController.text,
                   );
                   Navigator.pop(context);
                 } catch (e) {
@@ -187,10 +225,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                primary: Colors.teal.shade900, // Change the background color
+                primary: Colors.grey.shade900, // Change the background color
                 minimumSize: Size(150, 50),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // Adjust the border radius as needed
+                  borderRadius: BorderRadius.circular(10), // Adjust the border radius as needed
                 ),
               ),
               child: Text("Update Profile"),

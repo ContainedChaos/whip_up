@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:whip_up/Screens/AddRecipe/recipe_list_screen.dart';
+import 'package:whip_up/Screens/Signup/api_service.dart';
 import 'package:whip_up/models/core/myRecipe.dart';
 import 'package:whip_up/models/core/recipe.dart';
 import 'package:whip_up/models/helper/recipe_helper.dart';
@@ -16,13 +17,16 @@ import 'package:whip_up/views/widgets/featured_recipe_card.dart';
 import 'package:whip_up/views/widgets/recipe_tile.dart';
 import 'package:whip_up/views/widgets/recommendation_recipe_card.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:whip_up/services/auth_service.dart';
+import '../../model/user.dart';
 import '../../services/auth_service.dart';
 
 Future<List<MyRecipe>> fetchRecipes() async {
-  final apiUrl = 'http://192.168.0.104:8000/getrecipes/';
+  final apiUrl = 'http://192.168.2.104:8000/getrecipes/';
 
-  final Map<String, dynamic> userData = await AuthService().getUserData(); // Use a default value or handle null properly.
+  final Map<String, dynamic> userData = await AuthService().getUserData();
+  final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
+  final String profilePicture = userData['imageUrl'] ?? '';
 
   final response = await http.get(
     Uri.parse(apiUrl),
@@ -94,7 +98,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: Text('Hungry?', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w700)),
+        title: Text('WhipUp', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w700)),
         showProfilePhoto: true,
         profilePhoto: AssetImage('assets/images/pp.jpg'),
         profilePhotoOnPressed: () {
@@ -113,7 +117,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Container(
                   height: 245,
-                  color: AppColor.primary,
+                  color: Colors.grey.shade900,
                 ),
                 // Section 1 - Content
                 Column(
@@ -138,7 +142,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           TextButton(
                             onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => RecipeListScreen()));
+                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => DeliciousTodayPage(recipes: futureRecipes)));
                             },
                             child: Text('see all'),
                             style: TextButton.styleFrom(primary: Colors.white, textStyle: TextStyle(fontWeight: FontWeight.w400, fontSize: 14)),
@@ -150,122 +154,101 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       margin: EdgeInsets.only(top: 4),
                       height: 220,
-                      child: FutureBuilder<List<MyRecipe>>(
-                        future: futureRecipes,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            // Loading state
-                            return CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            // Error state
-                            return Text('Error: ${snapshot.error}');
-                          } else if (snapshot.hasData) {
-                            // Data available
-                            List<MyRecipe> recipes = snapshot.data!;
-                            return ListView.separated(
-                              itemCount: recipes.length,
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              physics: BouncingScrollPhysics(),
-                              shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              separatorBuilder: (context, index) {
-                                return SizedBox(width: 16);
-                              },
-                              itemBuilder: (context, index) {
-                                // Display your recipe data using FeaturedRecipeCard.
-                                return FeaturedRecipeCard(data: recipes[index]);
-                              },
-                            );
-                          } else {
-                            // No data available
-                            return Text('No data available');
-                          }
-                        },
+                      child: Center(
+                        child: FutureBuilder<List<MyRecipe>>(
+                          future: futureRecipes,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              // Loading state
+                              return CircularProgressIndicator(); // Display the loading indicator in the center.
+                            } else if (snapshot.hasError) {
+                              // Error state
+                              return Text('Error: ${snapshot.error}');
+                            } else if (snapshot.hasData) {
+                              // Data available
+                              List<MyRecipe> recipes = snapshot.data!;
+                              return ListView.separated(
+                                itemCount: recipes.length,
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                physics: BouncingScrollPhysics(),
+                                shrinkWrap: true,
+                                scrollDirection: Axis.horizontal,
+                                separatorBuilder: (context, index) {
+                                  return SizedBox(width: 16);
+                                },
+                                itemBuilder: (context, index) {
+                                  // Display your recipe data using FeaturedRecipeCard.
+                                  return FeaturedRecipeCard(data: recipes[index]);
+                                },
+                              );
+                            } else {
+                              // No data available
+                              return Text('No data available');
+                            }
+                          },
+                        ),
                       ),
                     ),
-
-
                   ],
-                )
+                ),
               ],
             ),
           ),
-          // Section 2 - Recommendation Recipe
+
           Container(
-            margin: EdgeInsets.only(top: 16),
+            margin: EdgeInsets.only(top: 14),
+            padding: EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
-                Container(
-                  margin: EdgeInsets.only(bottom: 16),
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'Today recomendation based on your taste...',
-                    style: TextStyle(color: Colors.grey),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 16.0), // Adjust the value (16.0) to your desired spacing
+                      child: Text(
+                        'Newly Posted',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'inter'),
+                      ),
+                    ),
+                  ],
                 ),
-                // Content
-                Container(
-                  height: 174,
-                  child: ListView.separated(
+                // Content - Use ListView.builder to display newly posted recipes
+            FutureBuilder<List<MyRecipe>>(
+              future: futureRecipes,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  // Loading state
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  // Error state
+                  return Text('Error: ${snapshot.error}');
+                } else if (snapshot.hasData) {
+                  // Data available
+                  List<MyRecipe> allRecipes = snapshot.data!;
+                  List<MyRecipe> latestRecipes = allRecipes.reversed.take(6).toList();
+                  return ListView.builder(
                     shrinkWrap: true,
-                    physics: BouncingScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: recommendationRecipe.length,
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    separatorBuilder: (context, index) {
-                      return SizedBox(width: 16);
-                    },
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: latestRecipes.length,
                     itemBuilder: (context, index) {
-                      return RecommendationRecipeCard(data: recommendationRecipe[index]);
+                      // Display your recipe data using RecipeTile with added space
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 16.0), // Adjust the value (16.0) for the desired space
+                        child: RecipeTile(data: latestRecipes[index]),
+                      );
                     },
-                  ),
-                )
-              ],
+                  );
+                } else {
+                  // No data available
+                  return Text('No data available');
+                }
+              },
+            ),
+            ],
             ),
           ),
-          // Section 3 - Newly Posted
-          // Container(
-          //   margin: EdgeInsets.only(top: 14),
-          //   padding: EdgeInsets.symmetric(horizontal: 16),
-          //   child: Column(
-          //     crossAxisAlignment: CrossAxisAlignment.start,
-          //     children: [
-          //       // Header
-          //       Row(
-          //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //         children: [
-          //           Text(
-          //             'Newly Posted',
-          //             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'inter'),
-          //           ),
-          //           TextButton(
-          //             onPressed: () {
-          //               Navigator.of(context).push(MaterialPageRoute(builder: (context) => NewlyPostedPage()));
-          //             },
-          //             child: Text('see all'),
-          //             style: TextButton.styleFrom(primary: Colors.black, textStyle: TextStyle(fontWeight: FontWeight.w400, fontSize: 14)),
-          //           ),
-          //         ],
-          //       ),
-          //       // Content
-          //       ListView.separated(
-          //         shrinkWrap: true,
-          //         itemCount: 3 ?? newlyPostedRecipe.length,
-          //         physics: NeverScrollableScrollPhysics(),
-          //         separatorBuilder: (context, index) {
-          //           return SizedBox(height: 16);
-          //         },
-          //         itemBuilder: (context, index) {
-          //           return RecipeTile(
-          //             data: newlyPostedRecipe[index],
-          //           );
-          //         },
-          //       ),
-          //     ],
-          //   ),
-          // )
         ],
       ),
     );

@@ -56,15 +56,21 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     'lunch',
     'dinner',
     'salad',
-    'drink'
+    'drink',
+    'dessert',
+    'snack',
+    'side'
   ];
   List<String> availableDifficulties = ['easy', 'medium', 'hard'];
   List<String> availableCuisines = [
+    'Bengali',
     'Mexican',
     'Chinese',
     'Indian',
     'Italian',
     'French',
+    'Korean',
+    'American',
     'Others'
   ];
   String cuisine = 'Mexican';
@@ -73,8 +79,9 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Recipe Details'),
-        backgroundColor: Colors.teal.shade900,
+        backgroundColor: Colors.grey.shade900,
       ),
       body: Padding(
         padding: const EdgeInsets.all(25.0),
@@ -86,16 +93,16 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               decoration: InputDecoration(
                   labelText: 'Recipe Title',
                   labelStyle: TextStyle(
-                  color: Colors.teal.shade800,
+                  color: Colors.grey.shade800,
                 ),
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                      color: Colors.teal.shade800,
+                      color: Colors.grey.shade800,
                       width: 2.0,
                   ), // Change the color of the line when focused
                 ),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.teal.shade600), // Change the color of the line when enabled
+                  borderSide: BorderSide(color: Colors.grey.shade600), // Change the color of the line when enabled
                 ),
               ),
               onChanged: (value) {
@@ -110,16 +117,16 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               decoration: InputDecoration(
                   labelText: 'Number of Servings',
                   labelStyle: TextStyle(
-                  color: Colors.teal.shade800,
+                  color: Colors.grey.shade800,
               ),
               focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
-                  color: Colors.teal.shade800,
+                  color: Colors.grey.shade800,
                   width: 2.0,
                 ), // Change the color of the line when focused
               ),
               enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.teal.shade600), // Change the color of the line when enabled
+                  borderSide: BorderSide(color: Colors.grey.shade600), // Change the color of the line when enabled
               ),
               ),
               keyboardType: TextInputType.number,
@@ -136,7 +143,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                 Text(
                   'Difficulty',
                   style: TextStyle(
-                    color: Colors.teal.shade800,
+                    color: Colors.grey.shade800,
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
                   ),
@@ -169,7 +176,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                         child: Text(
                           difficultyOption,
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 14,
                             color: isSelected
                                 ? Colors.white
                                 : _getDifficultyColor(difficultyOption),
@@ -191,7 +198,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                     Icon(
                       Icons.access_time, // Add an icon
                       size: 32,
-                      color: Colors.teal.shade800,// Icon size
+                      color: Colors.grey.shade800,// Icon size
                     ),
                     SizedBox(width: 13),
                     CookTimeInput(
@@ -225,7 +232,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                 });
               },
               style: TextStyle(
-                color: Colors.teal.shade800,
+                color: Colors.grey.shade800,
                 fontSize: 17,
               ),
               items: availableCuisines
@@ -238,7 +245,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               decoration: InputDecoration(
                 labelText: 'Cuisine',
                 labelStyle: TextStyle(
-                  color: Colors.teal.shade800,
+                  color: Colors.grey.shade800,
                   fontSize: 17,// Change the color of the label text
                 ),
                 border: OutlineInputBorder(
@@ -246,13 +253,13 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: Colors.teal.shade800, // Change the border color when focused
+                    color: Colors.grey.shade800, // Change the border color when focused
                   ),
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: Colors.teal.shade600, // Change the border color when enabled
+                    color: Colors.grey.shade600, // Change the border color when enabled
                   ),
                   borderRadius: BorderRadius.circular(10.0),
                 ),
@@ -273,69 +280,73 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                 ),
                 SizedBox(height: 8), // Add spacing
                 Wrap(
-                  children: [
-                    for (final tag in availableTags)
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            if (selectedTags.contains(tag)) {
-                              selectedTags.remove(tag);
-                            } else {
-                              selectedTags.add(tag);
-                            }
-                          });
-                        },
-                        child: Container(
-                          padding: EdgeInsets.all(8),
-                          margin: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: selectedTags.contains(tag)
-                                ? _getRandomTagColor()
-                                : Colors.white,
-                            border: Border.all(
-                              color: selectedTags.contains(tag)
-                                  ? _getRandomTagColor()
-                                  : Colors.grey,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
+                  children: availableTags.map((tag) {
+                    final isSelected = selectedTags.contains(tag);
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          if (isSelected) {
+                            selectedTags.remove(tag);
+                          } else {
+                            selectedTags.add(tag);
+                          }
+                        });
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(8),
+                        margin: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? _getTagColor(tag) : Colors.white,
+                          border: Border.all(
+                            color: isSelected ? _getTagColor(tag) : Colors.grey,
+                            width: 2,
                           ),
-                          child: Text(tag),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          tag,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black, // Change text color
+                          ),
                         ),
                       ),
-                  ],
+                    );
+                  }).toList(),
                 ),
               ],
             ),
             SizedBox(height: 16),
             // ... Next button
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        IngredientsAndStepsPage(
-                          title: title,
-                          servings: servings,
-                          difficulty: difficulty,
-                          cookTime: '$selectedHours hours $selectedMinutes minutes',
-                          userId: widget.userId,
-                          cuisine: cuisine,
-                          tags: selectedTags,
-                        ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 70), // Add left and right padding
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          IngredientsAndStepsPage(
+                            title: title,
+                            servings: servings,
+                            difficulty: difficulty,
+                            cookTime: '$selectedHours hours $selectedMinutes minutes',
+                            userId: widget.userId,
+                            cuisine: cuisine,
+                            tags: selectedTags,
+                          ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.grey.shade800, // Background color
+                  onPrimary: Colors.white, // Text color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0), // Border radius
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                primary: Colors.teal.shade800, // Background color
-                onPrimary: Colors.white, // Text color
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0), // Border radius
+                  minimumSize: Size(200, 55), // Width and height
                 ),
-                minimumSize: Size(200, 60), // Width and height
+                child: Text('Next'),
               ),
-              child: Text('Next'),
             ),
           ],
         ),
@@ -356,10 +367,31 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     }
   }
 
-  Color _getRandomTagColor() {
-    final colors = [Colors.blue, Colors.red, Colors.green, Colors.purple];
-    return colors[Random().nextInt(colors.length)];
+  Color _getTagColor(String tag) {
+    switch (tag) {
+      case 'breakfast':
+        return Colors.green;
+      case 'brunch':
+        return Colors.deepPurple.shade300;
+      case 'lunch':
+        return Colors.orange;
+      case 'dinner':
+        return Colors.lightBlue.shade600;
+      case 'salad':
+        return Colors.lime;
+      case 'drink':
+        return Colors.cyan;
+      case 'dessert':
+        return Colors.pinkAccent;
+      case 'snack':
+        return Colors.purple.shade300;
+      case 'side':
+        return Colors.pink.shade300;
+      default:
+        return Colors.grey.shade600;
+    }
   }
+
 }
 
 class IngredientsAndStepsPage extends StatefulWidget {
@@ -443,7 +475,9 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Ingredients and Steps'),
+        backgroundColor: Colors.grey.shade900,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -488,65 +522,104 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
             SizedBox(height: 20),
             Text('Steps'),
             _buildStepList(),
-            TextFormField(
-              controller: stepController,
-              decoration: InputDecoration(labelText: 'Step'),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: stepController,
+                    decoration: InputDecoration(labelText: 'Step'),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () {
+                    setState(() {
+                      String description = stepController.text;
+                      if (description.isNotEmpty) {
+                        steps.add(RecipeStep(description));
+                        stepController.clear();
+                      }
+                    });
+                  },
+                ),
+              ],
             ),
-            IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () {
-                setState(() {
-                  String description = stepController.text;
-                  if (description.isNotEmpty) {
-                    steps.add(RecipeStep(description));
-                    stepController.clear();
-                  }
-                });
-              },
-            ),
-            ElevatedButton(
-              onPressed: () async {
+            SizedBox(height: 50),
+            GestureDetector(
+              onTap: () async {
                 await _getImage();
               },
-              child: Text('Select Image'),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 70), // Adjust the padding as needed
+                child: Container(
+                  width: 200, // Set the width to make it a square
+                  height: 250, // Set the height to make it a square
+                  decoration: BoxDecoration(
+                    color: Colors.white, // White background
+                    border: Border.all(
+                      color: Colors.grey.shade600, // Green border
+                      width: 1, // Border width
+                    ),
+                    borderRadius: BorderRadius.circular(20), // Set the border radius
+                  ),
+                  child: Center(
+                    child: selectedImage != null
+                        ? Image.file(selectedImage!, height: 150, width: 150) // Display the selected image
+                        : Icon(
+                      Icons.add_a_photo, // You can use another icon like Icons.add or Icons.camera_alt
+                      size: 80, // Adjust the size of the icon
+                      color: Colors.grey.shade700, // Green icon color
+                    ),
+                  ),
+                ),
+              ),
             ),
             const SizedBox(
-              height: 20,
+              height: 30,
             ),
-            selectedImage != null
-                ? Image.file(selectedImage!, height: 200, width: 200)
-                : const Text("Please select an image"),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 70), // Adjust the padding as needed
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (selectedImage != null) {
+                    print(uploadsPath);
+                    print(imageName);
+                    String imageUrl = '$uploadsPath/$imageName';
 
-            ElevatedButton(
-              onPressed: () async {
-                if (selectedImage != null) {
-                  print(uploadsPath);
-                  print(imageName);
-                  String imageUrl = '$uploadsPath/$imageName';
-
-                  submitRecipe(
-                    widget.userId,
-                    widget.title,
-                    widget.servings,
-                    widget.difficulty,
-                    widget.cookTime,
-                    widget.cuisine,
-                    widget.tags,
-                    ingredients,
-                    steps,
-                    imageUrl,
-                  );
-                  print(imageUrl);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Please select an image'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-              child: Text('Submit'),
+                    submitRecipe(
+                      widget.userId,
+                      widget.title,
+                      widget.servings,
+                      widget.difficulty,
+                      widget.cookTime,
+                      widget.cuisine,
+                      widget.tags,
+                      ingredients,
+                      steps,
+                      imageUrl,
+                    );
+                    print(imageUrl);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Please select an image'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.grey.shade800, // Green background color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10), // Adjust the border radius as needed
+                  ),
+                  minimumSize: Size(double.infinity, 50), // Set the height
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16), // Add left and right padding
+                  child: Text('Submit'),
+                ),
+              ),
             ),
           ],
         ),
@@ -616,7 +689,7 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
     List<RecipeStep> steps,
     String imageUrl,
   ) async {
-    final apiUrl = 'http://192.168.0.104:8000/addrecipe/';
+    final apiUrl = 'http://192.168.2.104:8000/addrecipe/';
 
     final Map<String, dynamic> recipeData = {
       "userId": userId,

@@ -24,7 +24,7 @@ class DummySearchBar extends StatelessWidget {
                 height: 50,
                 margin: EdgeInsets.only(right: 15),
                 padding: EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColor.primarySoft),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.grey.shade700),
                 child: Row(
                   children: [
                     SvgPicture.asset('assets/icons/search.svg', color: Colors.white, height: 18, width: 18),
@@ -32,7 +32,7 @@ class DummySearchBar extends StatelessWidget {
                       margin: EdgeInsets.only(left: 10),
                       child: Text(
                         'What do you want to eat?',
-                        style: TextStyle(color: Colors.white.withOpacity(0.3)),
+                        style: TextStyle(color: Colors.white.withOpacity(0.6)),
                       ),
                     )
                   ],
