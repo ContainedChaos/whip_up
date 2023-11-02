@@ -32,7 +32,7 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
 
 
   Future<List<MyRecipe>> fetchMyRecipes() async {
-    final apiUrl = 'http://192.168.2.104'
+    final apiUrl = 'http://192.168.1.103'
         ':8000/getmyrecipes/';
 
     final Map<String, dynamic> userData = await AuthService().getUserData();

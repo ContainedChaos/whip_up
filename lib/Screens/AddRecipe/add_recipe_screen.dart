@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+import '../../views/screens/page_switcher.dart';
 import 'cook_time_input.dart';
 import 'package:http/http.dart' as http;
 
@@ -36,8 +37,10 @@ class RecipeIngredient {
 
 class RecipeDetailsPage extends StatefulWidget {
   final String userId;
+  final String userEmail;
+  final String userName;
 
-  RecipeDetailsPage({required this.userId});
+  RecipeDetailsPage({required this.userId, required this.userEmail, required this.userName});
 
   @override
   _RecipeDetailsPageState createState() => _RecipeDetailsPageState();
@@ -180,6 +183,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                             color: isSelected
                                 ? Colors.white
                                 : _getDifficultyColor(difficultyOption),
+
                           ),
                         ),
                       ),
@@ -331,6 +335,8 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                             difficulty: difficulty,
                             cookTime: '$selectedHours hours $selectedMinutes minutes',
                             userId: widget.userId,
+                            userName: widget.userName,
+                            userEmail: widget.userEmail,
                             cuisine: cuisine,
                             tags: selectedTags,
                           ),
@@ -400,6 +406,8 @@ class IngredientsAndStepsPage extends StatefulWidget {
   final String difficulty;
   final String cookTime;
   final String userId;
+  final String userName;
+  final String userEmail;
   final String cuisine;
   final List<String> tags;
 
@@ -409,6 +417,8 @@ class IngredientsAndStepsPage extends StatefulWidget {
     required this.difficulty,
     required this.cookTime,
     required this.userId,
+    required this.userEmail,
+    required this.userName,
     required this.cuisine,
     required this.tags,
   });
@@ -598,6 +608,12 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
                       steps,
                       imageUrl,
                     );
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => PageSwitcher(userEmail: widget.userEmail, userName: widget.userName, userId: widget.userId),
+                      ),
+                    );
+
                     print(imageUrl);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -689,7 +705,7 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
     List<RecipeStep> steps,
     String imageUrl,
   ) async {
-    final apiUrl = 'http://192.168.2.104:8000/addrecipe/';
+    final apiUrl = 'http://192.168.1.103:8000/addrecipe/';
 
     final Map<String, dynamic> recipeData = {
       "userId": userId,

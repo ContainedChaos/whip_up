@@ -7,8 +7,9 @@ import 'package:whip_up/Screens/home/presentation/widget/recipe_item.dart';
 class HomeScreen extends StatelessWidget {
   final String username; // Add this line
   final String userId;
+  final String userEmail;
 
-  const HomeScreen({super.key, required this.username, required this.userId});
+  const HomeScreen({super.key, required this.username, required this.userId, required this.userEmail});
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +51,7 @@ class HomeScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              RecipeDetailsPage(userId: userId),
+                              RecipeDetailsPage(userId: userId, userName: username, userEmail: userEmail),
                         ),
                       );
                     },

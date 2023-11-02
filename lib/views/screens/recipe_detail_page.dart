@@ -54,7 +54,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
   }
 
   Future<bool> getBookmarks(String user_id, String recipe_id) async {
-    final apiUrl = 'http://192.168.2.104:8000/getbookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.1.103:8000/getbookmark/$user_id/$recipe_id/';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -68,7 +68,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   Future<void> bookmarkRecipe(String user_id, String recipe_id) async {
     print("here");
-    final apiUrl = 'http://192.168.2.104:8000/bookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.1.103:8000/bookmark/$user_id/$recipe_id/';
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {

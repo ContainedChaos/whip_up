@@ -26,6 +26,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.initState();
     _usernameController.text = widget.user.username;
     _bioController.text = widget.user.bio.toString();
+
+    if (widget.user.image != null) {
+      setState(() {
+        selectedImage = File(widget.user.image!);
+      });
+    } else {
+      setState(() {
+        selectedImage = File('assets/images/pp.jpg'); // Use your default image path here
+      });
+    }
   }
 
   String uploadsPath = '';

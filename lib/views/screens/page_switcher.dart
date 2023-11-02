@@ -41,7 +41,7 @@ class _PageSwitcherState extends State<PageSwitcher> {
           children: [
             [
               HomePage(userEmail: widget.userEmail, userName: widget.userName),
-              RecipeDetailsPage(userId: widget.userId),
+              RecipeDetailsPage(userId: widget.userId, userName: widget.userName, userEmail: widget.userEmail),
               MyRecipesPage(userId: widget.userId),
               BookmarksPage(),
             ][_selectedIndex],
