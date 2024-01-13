@@ -18,7 +18,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
   void verify() async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.103:8000/verify-otp/'),
+      Uri.parse('http://192.168.0.114:8000/verify-otp/'),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         'user_id': widget.userId,

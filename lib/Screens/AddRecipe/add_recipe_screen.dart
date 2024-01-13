@@ -8,6 +8,10 @@ import '../../services/auth_service.dart';
 import '../../views/screens/page_switcher.dart';
 import 'cook_time_input.dart';
 import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
+
+Dio dio = Dio();
 
 class RecipeStep {
   String description;
@@ -434,6 +438,7 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
 
   String uploadsPath = '';  // Define uploadsPath at the class level
   String imageName = '';
+  String imageUrl = '';
 
   TextEditingController ingredientNameController = TextEditingController();
   TextEditingController ingredientQuantityController = TextEditingController();
@@ -441,29 +446,74 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
 
   File? selectedImage;
 
-  Future<void> _copyImageToUploadsFolder(File selectedImage) async {
+  // Future<void> _copyImageToUploadsFolder(File selectedImage) async {
+  //   try {
+  //     if (selectedImage != null) {
+  //       Directory uploadsDir = await getApplicationDocumentsDirectory();
+  //       uploadsPath = '${uploadsDir.path}/uploads';
+  //
+  //       if (!await Directory(uploadsPath).exists()) {
+  //         await Directory(uploadsPath).create(recursive: true);
+  //       }
+  //
+  //       imageName =
+  //           'recipe_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+  //       File newImage = await selectedImage.copy('$uploadsPath/$imageName');
+  //
+  //       print("Image copied to: $uploadsPath/$imageName");
+  //
+  //       setState(() {
+  //         this.selectedImage = newImage;
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print('Error copying image: $e');
+  //   }
+  // }
+
+  Future<String?> _copyImageToBackend(File selectedImage) async {
     try {
       if (selectedImage != null) {
-        Directory uploadsDir = await getApplicationDocumentsDirectory();
-        uploadsPath = '${uploadsDir.path}/uploads';
+        AuthService authService = AuthService();
+        String? token = await authService.getAccessToken();
+        String? email = await authService.getUserEmail();
 
-        if (!await Directory(uploadsPath).exists()) {
-          await Directory(uploadsPath).create(recursive: true);
-        }
+        FormData formData = FormData.fromMap({
+          'image': await MultipartFile.fromFile(
+            selectedImage.path,
+            filename: 'recipe_image.jpg',
+            contentType: MediaType('image', 'jpeg'), // Adjust content type if needed
+          ),
+          'user_email': email,
+        });
 
-        imageName =
-            'recipe_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        File newImage = await selectedImage.copy('$uploadsPath/$imageName');
+        print("user_email: $email");
+        print("image: ${selectedImage.path}");
 
-        print("Image copied to: $uploadsPath/$imageName");
+
+        Response response = await dio.post(
+          'http://192.168.0.114:8000/upload-recipe-image/',
+          data: formData,
+          options: Options(headers: {'Authorization': token}),
+        );
+
+        print(response.statusCode);
+        print(response.data);
+
+        // Handle the response from the backend (e.g., retrieve the uploaded image URL)
+        imageUrl = response.data['imageUrl'];
 
         setState(() {
-          this.selectedImage = newImage;
+          this.selectedImage = selectedImage;
         });
+
+        return imageUrl;
       }
     } catch (e) {
-      print('Error copying image: $e');
+      print('Error uploading image to backend: $e');
     }
+
+    return null;
   }
 
   Future<void> _getImage() async {
@@ -472,8 +522,6 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
     if (image == null) return;
 
     final imageTemp = File(image.path);
-
-    await _copyImageToUploadsFolder(imageTemp);
 
     setState(() {
       this.selectedImage = imageTemp;
@@ -594,7 +642,7 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
                   if (selectedImage != null) {
                     print(uploadsPath);
                     print(imageName);
-                    String imageUrl = '$uploadsPath/$imageName';
+                    String? imageUrl = await _copyImageToBackend(selectedImage!);
 
                     submitRecipe(
                       widget.userId,
@@ -606,7 +654,7 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
                       widget.tags,
                       ingredients,
                       steps,
-                      imageUrl,
+                      imageUrl!,
                     );
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -705,7 +753,7 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
     List<RecipeStep> steps,
     String imageUrl,
   ) async {
-    final apiUrl = 'http://192.168.1.103:8000/addrecipe/';
+    final apiUrl = 'http://192.168.0.114:8000/addrecipe/';
 
     final Map<String, dynamic> recipeData = {
       "userId": userId,
