@@ -42,7 +42,7 @@ class _BookmarksPageState extends State<BookmarksPage> {
 
 
   Future<List<MyRecipe>> fetchBookmarkedRecipes() async {
-    final apiUrl = 'http://192.168.0.114:8000/getbookmarkedrecipes/';
+    final apiUrl = 'http://192.168.0.107:8000/getbookmarkedrecipes/';
 
     final Map<String, dynamic> userData = await AuthService().getUserData();
     final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.

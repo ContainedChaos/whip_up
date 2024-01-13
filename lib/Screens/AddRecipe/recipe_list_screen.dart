@@ -6,7 +6,7 @@ import 'package:whip_up/services/auth_service.dart';
 import 'package:whip_up/Screens/AddRecipe/recipeDetailScreen.dart';
 
 Future<List<Map<String, dynamic>>> fetchRecipes() async {
-  final apiUrl = 'http://192.168.0.114:8000/getrecipes/';
+  final apiUrl = 'http://192.168.0.107:8000/getrecipes/';
 
   final Map<String, dynamic> userData = await AuthService().getUserData();
   final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
