@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:whip_up/Screens/Login/login_screen.dart';
 import 'package:whip_up/Screens/Signup/signup_screen.dart';
-import 'package:whip_up/views/utils/AppColor.dart';
-import 'package:whip_up/views/widgets/modals/login_modal.dart';
-import 'package:whip_up/views/widgets/modals/register_modal.dart';
 
 class WelcomePage extends StatelessWidget {
   @override
@@ -32,11 +29,11 @@ class WelcomePage extends StatelessWidget {
                 height: MediaQuery.of(context).size.height,
                 decoration: BoxDecoration(gradient: LinearGradient(
                   colors: [
-                    Colors.transparent, // Start with a transparent color
-                    Colors.grey.shade900, // You can change the opacity and color
+                    Colors.transparent,
+                    Colors.grey.shade900,
                   ],
-                  begin: Alignment.topCenter, // Gradient starts at the bottom center
-                  end: Alignment.bottomCenter,   // Gradient ends at the same point
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -65,7 +62,6 @@ class WelcomePage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Get Started Button
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
                           height: 60,
@@ -89,7 +85,6 @@ class WelcomePage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 16),
-                        // Log in Button
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
                           height: 60,

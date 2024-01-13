@@ -12,7 +12,10 @@ class RecipeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String imagePath = data.imageUrl;
+    String basePath = 'http://192.168.0.114:8000/recipe-image/'; // Change this to your actual base URL
+    String imagePath = data.imageUrl; // Assuming data.imageUrl is the relative path
+
+    String imageUrl = basePath + imagePath;
 
     return GestureDetector(
       onTap: () {
@@ -34,7 +37,7 @@ class RecipeTile extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5),
                 color: Colors.blueGrey,
-                image: DecorationImage(image: FileImage(File(imagePath)), fit: BoxFit.cover),
+                image: DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover),
               ),
             ),
             // Recipe Info

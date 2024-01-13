@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -106,12 +107,20 @@ class _ProfilePageState extends State<ProfilePage> {
                       shape: BoxShape.circle, // Define a circular shape
                     ),
                     child: ClipOval(
-                      child: _user.image != ""
-                          ? Image.file(
-                        File(_user.image!),
-                        height: 130,
-                        width: 130,
-                        fit: BoxFit.cover, // Make the image fill the circle
+                      child: _user.image != null && _user.image!.isNotEmpty
+                          ? Image.network(
+                        'http://192.168.0.114:8000/profile-picture/${_user.image}',
+                          fit: BoxFit.cover,
+                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) {
+                            // Image is fully loaded
+                            return child;
+                          } else {
+                            // Image is still loading, you can show a loading indicator here
+                            return CircularProgressIndicator();
+                          }
+                        },
+                        errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
                       )
                           : Image.asset(
                         'assets/images/pp.jpg',

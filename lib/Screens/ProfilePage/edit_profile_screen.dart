@@ -6,6 +6,12 @@ import 'package:whip_up/Screens/Signup/api_service.dart';
 import 'package:whip_up/views/utils/AppColor.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
+
+import '../../services/auth_service.dart';
+
+Dio dio = Dio();
 
 class EditProfileScreen extends StatefulWidget {
   final User user;
@@ -19,23 +25,26 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _bioController = TextEditingController();
-  File? selectedImage;
+  File? selectedImage = null;
 
   @override
   void initState() {
     super.initState();
+    print('widget.user.image:${widget.user.image}' + 'huh?');
     _usernameController.text = widget.user.username;
     _bioController.text = widget.user.bio.toString();
 
     if (widget.user.image != null) {
       setState(() {
-        selectedImage = File(widget.user.image!);
+        selectedImage = null;
       });
     } else {
       setState(() {
-        selectedImage = File('assets/images/pp.jpg'); // Use your default image path here
+        selectedImage = null; // Use your default image path here
       });
     }
+
+    print('selectedImage:${selectedImage}' + 'huh?');
   }
 
   String uploadsPath = '';
@@ -43,31 +52,73 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String imageUrl = '';
   String bio = '';
 
-  Future<void> _copyImageToUploadsFolder(File selectedImage) async {
+  Future<void> _copyImageToBackend(File selectedImage) async {
     try {
       if (selectedImage != null) {
-        Directory uploadsDir = await getApplicationDocumentsDirectory();
-        uploadsPath = '${uploadsDir.path}/uploads';
+        AuthService authService = AuthService();
+        String? token = await authService.getAccessToken();
+        String? email = await authService.getUserEmail();
 
-        if (!await Directory(uploadsPath).exists()) {
-          await Directory(uploadsPath).create(recursive: true);
-        }
+        FormData formData = FormData.fromMap({
+          'image': await MultipartFile.fromFile(
+            selectedImage.path,
+            filename: 'user_image.jpg',
+            contentType: MediaType('image', 'jpeg'), // Adjust content type if needed
+          ),
+          'user_email': email,
+        });
 
-        imageName = 'user_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        File newImage = await selectedImage.copy('$uploadsPath/$imageName');
+        print("user_email: $email");
+        print("image: ${selectedImage.path}");
 
-        print("Image copied to: $uploadsPath/$imageName");
-        imageUrl = "$uploadsPath/$imageName";
-        print(imageUrl);
+
+        Response response = await dio.post(
+          'http://192.168.0.114:8000/upload-image/',
+          data: formData,
+          options: Options(headers: {'Authorization': token}),
+        );
+
+        print(response.statusCode);
+        print(response.data);
+
+        // Handle the response from the backend (e.g., retrieve the uploaded image URL)
+        imageUrl = response.data['imageUrl'];
 
         setState(() {
-          this.selectedImage = newImage;
+          this.selectedImage = selectedImage;
         });
       }
     } catch (e) {
-      print('Error copying image: $e');
+      print('Error uploading image to backend: $e');
     }
   }
+
+
+  // Future<void> _copyImageToUploadsFolder(File selectedImage) async {
+  //   try {
+  //     if (selectedImage != null) {
+  //       Directory uploadsDir = await getApplicationDocumentsDirectory();
+  //       uploadsPath = '${uploadsDir.path}/uploads';
+  //
+  //       if (!await Directory(uploadsPath).exists()) {
+  //         await Directory(uploadsPath).create(recursive: true);
+  //       }
+  //
+  //       imageName = 'user_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+  //       File newImage = await selectedImage.copy('$uploadsPath/$imageName');
+  //
+  //       print("Image copied to: $uploadsPath/$imageName");
+  //       imageUrl = "$uploadsPath/$imageName";
+  //       print(imageUrl);
+  //
+  //       setState(() {
+  //         this.selectedImage = newImage;
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print('Error copying image: $e');
+  //   }
+  // }
 
   Future<void> _getImage() async {
     final image = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -75,8 +126,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (image == null) return;
 
     final imageTemp = File(image.path);
-
-    await _copyImageToUploadsFolder(imageTemp);
 
     setState(() {
       this.selectedImage = imageTemp;
@@ -118,18 +167,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             width: 130,
                             fit: BoxFit.cover,
                           )
-                              : (widget.user.image != null
-                              ? Image.file(
-                            File(widget.user.image!),
+                              : (widget.user.image != null && widget.user.image!.isNotEmpty
+                              ? Image.network(
+                            'http://192.168.0.114:8000/profile-picture/${widget.user.image}',
                             height: 130,
                             width: 130,
                             fit: BoxFit.cover,
+                            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                              if (loadingProgress == null) {
+                                // Image is fully loaded
+                                return child;
+                              } else {
+                                // Image is still loading, you can show a loading indicator here
+                                return CircularProgressIndicator();
+                              }
+                            },
+                            errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
                           )
-                              : Icon(
-                            Icons.person,
-                            size: 100,
-                            color: Colors.white,
+                              : Image.asset(
+                            'assets/images/pp.jpg',
+                            height: 130,
+                            width: 130,
+                            fit: BoxFit.cover,
                           )),
+
                         ),
                         Align(
                           alignment: Alignment.bottomRight,
@@ -217,6 +278,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             SizedBox(height: 30),
             ElevatedButton(
               onPressed: () async {
+                await _copyImageToBackend(selectedImage!);
+
                 try {
                   await ApiService().editUserProfile(
                       widget.user.email,
