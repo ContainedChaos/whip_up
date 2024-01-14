@@ -28,6 +28,7 @@ class MyRecipe {
   final List<RecipeIngredient> ingredients;
   final List<RecipeStep> steps;
   final String imageUrl;
+  final int total_likes;
 
   MyRecipe({
     required this.id,
@@ -41,6 +42,7 @@ class MyRecipe {
     required this.ingredients,
     required this.steps,
     required this.imageUrl,
+    required this.total_likes,
   });
 }
 

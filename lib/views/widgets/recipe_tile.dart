@@ -12,7 +12,7 @@ class RecipeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String basePath = 'http://192.168.0.114:8000/recipe-image/'; // Change this to your actual base URL
+    String basePath = 'http://192.168.0.103:8000/recipe-image/'; // Change this to your actual base URL
     String imagePath = data.imageUrl; // Assuming data.imageUrl is the relative path
 
     String imageUrl = basePath + imagePath;
@@ -88,6 +88,22 @@ class RecipeTile extends StatelessWidget {
                             style: TextStyle(fontSize: 12),
                           ),
                         ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        SvgPicture.asset(
+                          'assets/icons/like.svg',
+                          color: Colors.black,
+                          width: 12,
+                          height: 12,
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(left: 5),
+                          child: Text(
+                            data.total_likes.toString(),
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        )
                       ],
                     ),
                   ],

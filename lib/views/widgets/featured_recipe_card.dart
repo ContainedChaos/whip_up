@@ -14,7 +14,7 @@ class FeaturedRecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String basePath = 'http://192.168.0.114:8000/recipe-image/'; // Change this to your actual base URL
+    String basePath = 'http://192.168.0.103:8000/recipe-image/'; // Change this to your actual base URL
     String imagePath = data.imageUrl; // Assuming data.imageUrl is the relative path
 
     String imageUrl = basePath + imagePath;
@@ -110,6 +110,20 @@ class FeaturedRecipeCard extends StatelessWidget {
                             style: TextStyle(color: Colors.white, fontSize: 12),
                           ),
                         ),
+                        SizedBox(width: 25),
+                        SvgPicture.asset(
+                          'assets/icons/like.svg',
+                          color: Colors.white,
+                          width: 14,
+                          height: 14,
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(left: 5),
+                          child: Text(
+                            data.total_likes.toString(),
+                            style: TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                        )
                       ],
                     ),
                   ),
