@@ -9,22 +9,27 @@ import 'package:whip_up/views/utils/AppColor.dart';
 import '../../models/core/myRecipe.dart';
 
 class PopularRecipeCard extends StatelessWidget {
-  final Recipe data;
+  final MyRecipe data;
 
   PopularRecipeCard({required this.data});
   @override
   Widget build(BuildContext context) {
+    String basePath = 'http://192.168.0.107:8000/recipe-image/';
+    String imagePath = data.imageUrl;
+
+    String imageUrl = basePath + imagePath;
+
     return GestureDetector(
-      // onTap: () {
-      //   Navigator.of(context).push(MaterialPageRoute(builder: (context) => RecipeDetailPage(data: data)));
-      // },
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => RecipeDetailPage(data: data)));
+      },
       child: Container(
         width: MediaQuery.of(context).size.width,
         height: 160,
         alignment: Alignment.bottomRight,
         padding: EdgeInsets.all(15),
         // Image
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), image: DecorationImage(image: AssetImage(data.photo), fit: BoxFit.cover)),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), image: DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +42,7 @@ class PopularRecipeCard extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: AppColor.primary),
               child: Text(
-                'Popular Now !!',
+                'Popular Now!!!',
                 style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500),
               ),
             ),
@@ -77,16 +82,21 @@ class PopularRecipeCard extends StatelessWidget {
                             Container(
                               margin: EdgeInsets.only(left: 5),
                               child: Text(
-                                data.calories,
+                                data.difficulty,
                                 style: TextStyle(color: Colors.white, fontSize: 10),
                               ),
                             ),
                             SizedBox(width: 10),
-                            Icon(Icons.alarm, size: 12, color: Colors.white),
+                            Image.asset(
+                              'assets/icons/serving-dish.png',
+                              color: Colors.white,
+                              width: 15,
+                              height: 15,
+                            ),
                             Container(
                               margin: EdgeInsets.only(left: 5),
                               child: Text(
-                                data.time,
+                                data.cuisine,
                                 style: TextStyle(color: Colors.white, fontSize: 10),
                               ),
                             ),

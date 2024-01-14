@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whip_up/views/utils/AppColor.dart';
 
+import 'modals/search_filter_model.dart';
+
 class DummySearchBar extends StatelessWidget {
   final VoidCallback routeTo; // Use VoidCallback here
 
@@ -40,15 +42,30 @@ class DummySearchBar extends StatelessWidget {
               ),
             ),
             // Right side - filter button
-            Container(
-              width: 50,
-              height: 50,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: AppColor.secondary,
+            GestureDetector(
+              onTap: () {
+                showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+                    builder: (context) {
+                      return SearchFilterModel();
+                    });
+              },
+              child: Container(
+                width: 50,
+                height: 50,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: AppColor.secondary,
+                ),
+                child: SvgPicture.asset('assets/icons/magic.svg',
+                    width: 25, // Set your desired width
+                    height: 25,
+                    color: Colors.black54
+                ),
               ),
-              child: SvgPicture.asset('assets/icons/filter.svg'),
             )
           ],
         ),

@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whip_up/models/core/recipe.dart';
 import 'package:whip_up/models/helper/recipe_helper.dart';
 import 'package:whip_up/views/utils/AppColor.dart';
-import 'package:whip_up/views/widgets/modals/search_filter_modal.dart';
+import 'package:whip_up/views/widgets/modals/search_filter_model.dart';
 import 'package:whip_up/views/widgets/recipe_tile.dart';
 
 class SearchPage extends StatefulWidget {
@@ -97,7 +97,7 @@ class _SearchPageState extends State<SearchPage> {
                               backgroundColor: Colors.white,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
                               builder: (context) {
-                                return SearchFilterModal();
+                                return SearchFilterModel();
                               });
                         },
                         child: Container(
@@ -108,7 +108,11 @@ class _SearchPageState extends State<SearchPage> {
                             borderRadius: BorderRadius.circular(10),
                             color: AppColor.secondary,
                           ),
-                          child: SvgPicture.asset('assets/icons/filter.svg'),
+                          child: SvgPicture.asset('assets/icons/magic.svg',
+                            width: 25, // Set your desired width
+                            height: 25,
+                            color: Colors.black54
+                          ),
                         ),
                       )
                     ],

@@ -109,7 +109,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: ClipOval(
                       child: _user.image != null && _user.image!.isNotEmpty
                           ? Image.network(
-                        'http://192.168.0.114:8000/profile-picture/${_user.image}',
+                        'http://192.168.0.107:8000/profile-picture/${_user.image}',
                           fit: BoxFit.cover,
                         loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                           if (loadingProgress == null) {

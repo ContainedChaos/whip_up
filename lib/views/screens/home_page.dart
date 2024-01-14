@@ -22,7 +22,7 @@ import '../../model/user.dart';
 import '../../services/auth_service.dart';
 
 Future<List<MyRecipe>> fetchRecipes() async {
-  final apiUrl = 'http://192.168.0.114:8000/getrecipes/';
+  final apiUrl = 'http://192.168.0.107:8000/getrecipes/';
 
   final Map<String, dynamic> userData = await AuthService().getUserData();
   final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -195,6 +195,41 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
+          Container(
+            margin: EdgeInsets.only(top: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Container(
+                  margin: EdgeInsets.only(bottom: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'Today\'s recommendations based on your taste...',
+                    style: TextStyle(color: Colors.grey.shade800, fontSize: 15),
+                  ),
+                ),
+                // Content
+                Container(
+                  height: 174,
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: BouncingScrollPhysics(),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: recommendationRecipe.length,
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    separatorBuilder: (context, index) {
+                      return SizedBox(width: 16);
+                    },
+                    itemBuilder: (context, index) {
+                      return RecommendationRecipeCard(data: recommendationRecipe[index]);
+                    },
+                  ),
+                )
+              ],
+            ),
+          ),
+          SizedBox(height: 12),
           Container(
             margin: EdgeInsets.only(top: 14),
             padding: EdgeInsets.symmetric(horizontal: 16),
