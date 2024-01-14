@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:whip_up/models/core/recipe.dart';
 import 'package:whip_up/models/helper/recipe_helper.dart';
@@ -22,7 +24,6 @@ class DeliciousTodayPage extends StatefulWidget {
 }
 
 class _DeliciousTodayPageState extends State<DeliciousTodayPage> {
-  final Recipe popularRecipe = RecipeHelper.popularRecipe;
 
   @override
   Widget build(BuildContext context) {
@@ -43,15 +44,31 @@ class _DeliciousTodayPageState extends State<DeliciousTodayPage> {
         shrinkWrap: true,
         physics: BouncingScrollPhysics(),
         children: [
-          // Section 1 - Popular Recipe
-          // Container(
-          //   color: AppColor.primary,
-          //   alignment: Alignment.topCenter,
-          //   height: 210,
-          //   padding: EdgeInsets.all(16),
-          //   child: PopularRecipeCard(data: popularRecipe),
-          // ),
-          // Section 2 - List of Recipes
+          //Section 1 - Popular Recipe
+          Container(
+            color: AppColor.primary,
+            alignment: Alignment.topCenter,
+            height: 210,
+            padding: EdgeInsets.all(16),
+            child: FutureBuilder<List<MyRecipe>>(
+              future: widget.recipes,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else if (snapshot.hasData) {
+                  List<MyRecipe> recipes = snapshot.data!;
+                  // Randomly select a recipe from the list
+                  MyRecipe randomRecipe = recipes[Random().nextInt(recipes.length)];
+                  return PopularRecipeCard(data: randomRecipe);
+                } else {
+                  return Text('No data available');
+                }
+              },
+            ),
+          ),
+          //Section 2 - List of Recipes
           Container(
             padding: EdgeInsets.all(16),
             width: MediaQuery.of(context).size.width,

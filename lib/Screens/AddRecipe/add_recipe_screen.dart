@@ -61,11 +61,14 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     'breakfast',
     'brunch',
     'lunch',
-    'dinner',
     'salad',
+    'dinner',
+    'snack',
+    'healthy',
     'drink',
     'dessert',
-    'snack',
+    'seafood',
+    'spicy',
     'side'
   ];
   List<String> availableDifficulties = ['easy', 'medium', 'hard'];
@@ -394,7 +397,13 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
       case 'dessert':
         return Colors.pinkAccent;
       case 'snack':
-        return Colors.purple.shade300;
+        return Colors.pink.shade300;
+      case 'spicy':
+        return Colors.redAccent;
+      case 'healthy':
+        return Colors.green;
+      case 'seafood':
+        return Colors.orange;
       case 'side':
         return Colors.pink.shade300;
       default:

@@ -16,6 +16,7 @@ class CategoryCard extends StatelessWidget {
         // Image
         image: DecorationImage(image: image, fit: BoxFit.cover),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Container(
         width: 164,
         height: 60,

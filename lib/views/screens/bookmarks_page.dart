@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whip_up/models/core/recipe.dart';
 import 'package:whip_up/models/helper/recipe_helper.dart';
 import 'package:whip_up/views/utils/AppColor.dart';
-import 'package:whip_up/views/widgets/modals/search_filter_modal.dart';
+import 'package:whip_up/views/widgets/modals/search_filter_model.dart';
 import 'package:whip_up/views/widgets/recipe_tile.dart';
 import 'package:http/http.dart' as http;
 import '../../models/core/myRecipe.dart';

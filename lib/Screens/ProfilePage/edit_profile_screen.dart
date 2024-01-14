@@ -278,7 +278,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             SizedBox(height: 30),
             ElevatedButton(
               onPressed: () async {
-                await _copyImageToBackend(selectedImage!);
+                if (selectedImage != null) {
+                  await _copyImageToBackend(selectedImage!);
+                }
 
                 try {
                   await ApiService().editUserProfile(

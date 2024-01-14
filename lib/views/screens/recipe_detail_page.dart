@@ -31,6 +31,9 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   bool? _isBookmarked;
   String user_id = '';
+  int noOfServings = 0;
+  int givenNoOfServings = 0;
+  int customized = 0;
 
   @override
   void initState() {
@@ -40,6 +43,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
     _scrollController.addListener(() {
       changeAppBarColor(_scrollController);
     });
+
+    noOfServings = widget.data.servings;
+    givenNoOfServings = widget.data.servings;
+    customized = 0;
 
     AuthService().getUserData().then((userData) {
       user_id = userData['user_id'] ?? 'default_user_id';
@@ -297,10 +304,90 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                     Container(
                       margin: EdgeInsets.only(left: 7),
                       child: Text(
-                        widget.data.servings.toString(),
+                        noOfServings.toString(),
                         style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
                     ),
+                    SizedBox(width: 20),
+                    TextButton(
+                      onPressed: () {
+                        // Show servings customization dialog
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            int servings = noOfServings; // Default value for servings
+                            return AlertDialog(
+                              backgroundColor: AppColor.secondarySoft,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12), // Adjust the borderRadius as needed
+                              ),
+                              //title: Text('Customize Servings'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(height: 10),
+                                  TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    style: TextStyle(fontSize: 16), // Adjust the font size
+                                    textAlign: TextAlign.center, // Center-align the text
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter number of servings',
+                                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10), // Adjust padding
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    onChanged: (value) {
+                                      // Handle changes in the input field
+                                      servings = int.tryParse(value) ?? servings;
+                                    },
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(); // Close the dialog
+                                  },
+                                  child: Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    // Handle the selected number of servings (e.g., update UI)
+                                    setState(() {
+                                      noOfServings = servings;
+                                      customized = 1;
+                                    });
+                                    Navigator.of(context).pop(); // Close the dialog
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    primary: Colors.grey.shade700,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: Text('Apply'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        primary: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        backgroundColor: Colors.grey.shade700,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Customize',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+
+
                   ],
                 ),
                 // Recipe Title
@@ -386,17 +473,59 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
             index: _tabController.index,
             children: [
               // Ingridients
+              // Inside the ListView.builder in the RecipeDetailPage
               ListView.builder(
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
                 itemCount: widget.data.ingredients.length,
                 physics: NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
-                  return IngridientTile(
-                    data: widget.data.ingredients[index],
+                  RecipeIngredient data = widget.data.ingredients[index];
+
+                  String quantityString = data.quantity;
+                  double quantity = double.tryParse(RegExp(r'\d+(\.\d+)?').firstMatch(quantityString)?.group(0) ?? '0.0') ?? 0.0;
+                  double newQuantity = (quantity / givenNoOfServings) * noOfServings;
+
+                  String unit = RegExp(r'[^\d.]+').stringMatch(quantityString) ?? '';
+
+                  return Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                    decoration: BoxDecoration(
+                      border: Border(bottom: BorderSide(color: Colors.grey[350] ?? Colors.black, width: 1)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          flex: 9,
+                          child: Text(
+                            data.name,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 150 / 100),
+                          ),
+                        ),
+                        Flexible(
+                          flex: 6,
+                          child: Text(
+                            customized == 0
+                                ? data.quantity
+                                : newQuantity % 1 == 0
+                                ? '${newQuantity.toInt()} $unit'
+                                : '${newQuantity.toStringAsFixed(2)} $unit',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'inter',
+                              color: Colors.grey[600] ?? Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
+
               // Tutorials
               ListView.builder(
                 shrinkWrap: true,
