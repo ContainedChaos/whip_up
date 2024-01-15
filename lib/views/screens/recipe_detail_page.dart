@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:whip_up/models/core/recipe.dart';
 import 'package:whip_up/views/screens/full_screen_image.dart';
 import 'package:whip_up/views/utils/AppColor.dart';
@@ -11,7 +13,7 @@ import 'package:whip_up/views/widgets/review_tile.dart';
 import 'package:whip_up/views/widgets/step_tile.dart';
 import 'dart:io';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-
+import 'package:speech_to_text/speech_recognition_result.dart';
 import '../../models/core/myRecipe.dart';
 import 'package:http/http.dart' as http;
 import '../../models/recipe_review.dart' ;
@@ -32,7 +34,7 @@ class RecipeDetailPage extends StatefulWidget {
 }
 
 Future<void> postReview(String recipeId, String userId, String comment, double rating, BuildContext context ) async {
-  final apiUrl = 'http://192.168.2.104:8000/postreview/';
+  final apiUrl = 'http://192.168.2.105:8000/postreview/';
   final response = await http.post(
     Uri.parse(apiUrl),
     headers: {
@@ -61,7 +63,7 @@ Future<void> postReview(String recipeId, String userId, String comment, double r
 }
 
 Future<List<RecipeReview>> getReviews(String recipeId) async {
-  final apiUrl = 'http://192.168.2.104:8000/getreviews/$recipeId/';
+  final apiUrl = 'http://192.168.2.105:8000/getreviews/$recipeId/';
   print("RECIPEID in RECIPEDETAILPAGE: " + recipeId);
   final response = await http.get(Uri.parse(apiUrl));
 
@@ -89,6 +91,12 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
   int noOfServings = 0;
   int givenNoOfServings = 0;
   int customized = 0;
+  final FlutterTts flutterTts = FlutterTts();
+  SpeechToText _speechToText = SpeechToText();
+  bool _speechEnabled = false;
+  bool _isListeningForCommands = false;
+  bool _isListeningAfterStep = false;
+  int _currentStepIndex = 0;
 
   Future<void> refreshReviews() async {
     setState(() {
@@ -162,6 +170,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
   @override
   void initState() {
     super.initState();
+    _initSpeech();
     _reviewsFuture = getReviews(widget.data.id);
     _tabController = TabController(length: 3, vsync: this);
     _scrollController = ScrollController(initialScrollOffset: 0.0);
@@ -192,8 +201,83 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
     });
   }
 
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize();
+    setState(() {});
+  }
+
+  Future<void> _startListening() async {
+    await _speechToText.listen(onResult: _onSpeechResult);
+    setState(() {});
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    print('Recognized Words: ${result.recognizedWords}');
+
+    String command = result.recognizedWords?.toLowerCase() ?? '';
+
+    if (command.isNotEmpty) {
+      if (command.contains('next step')) {
+        _currentStepIndex++;
+        _speakRecipeSteps(_currentStepIndex);
+      } else if (command.contains('go back')) {
+        _currentStepIndex--;
+        _speakRecipeSteps(_currentStepIndex);
+      }
+      else if (command.contains('again')) {
+        _speakRecipeSteps(_currentStepIndex);
+      }
+    }
+  }
+
+
+  Future<void> _stopListening() async {
+    await _speechToText.stop();
+    setState(() {});
+  }
+
+  void _stopListeningForCommands() async {
+    setState(() {
+      _isListeningForCommands = false;
+    });
+    await _speechToText.stop();
+  }
+
+  Future<void> _speakRecipeSteps(int _currentStepIndex) async {
+    await flutterTts.setLanguage("en-US");
+
+    if (_currentStepIndex < 0){
+      setState(() {
+        _currentStepIndex = 0;
+      });
+      await flutterTts.speak("No steps before this");
+    }
+
+    else if (_currentStepIndex > widget.data.steps.length - 1){
+      _currentStepIndex = 0;
+      await flutterTts.speak("You have reached the end");
+    }
+
+    else {
+      print('Reading step: ${widget.data.steps[_currentStepIndex].description}');
+      await flutterTts.speak(widget.data.steps[_currentStepIndex].description);
+
+      int stepLength = widget.data.steps[_currentStepIndex].description.length;
+      int delayInSeconds = stepLength ~/ 10;
+
+      int minDelayInSeconds = 8;
+      int finalDelay = delayInSeconds > minDelayInSeconds ? delayInSeconds : minDelayInSeconds;
+
+      await Future.delayed(Duration(seconds: finalDelay));
+
+      await _startListening();
+      await Future.delayed(Duration(seconds: 7));
+      await _stopListening();
+    }
+  }
+
   Future<bool> getBookmarks(String user_id, String recipe_id) async {
-    final apiUrl = 'http://192.168.2.104:8000/getbookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.105:8000/getbookmark/$user_id/$recipe_id/';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -207,7 +291,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   Future<void> bookmarkRecipe(String user_id, String recipe_id) async {
     print("here");
-    final apiUrl = 'http://192.168.2.104:8000/bookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.105:8000/bookmark/$user_id/$recipe_id/';
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -231,7 +315,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
   }
 
   Future<bool> getLikes(String user_id, String recipe_id) async {
-    final apiUrl = 'http://192.168.2.104:8000/getlike/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.105:8000/getlike/$user_id/$recipe_id/';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -245,7 +329,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   Future<void> likeRecipe(String user_id, String recipe_id) async {
     print("here");
-    final apiUrl = 'http://192.168.2.104:8000/like/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.105:8000/like/$user_id/$recipe_id/';
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -300,7 +384,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    String basePath = 'http://192.168.2.104:8000/recipe-image/'; // Change this to your actual base URL
+    String basePath = 'http://192.168.2.105:8000/recipe-image/'; // Change this to your actual base URL
     String imagePath = widget.data.imageUrl; // Assuming data.imageUrl is the relative path
 
     String imageUrl = basePath + imagePath;
@@ -361,14 +445,85 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
         ),
       ),
       // Post Review FAB
-      floatingActionButton: Visibility(
-        visible: showFAB(_tabController),
-        child: FloatingActionButton(
-          onPressed: () => _showReviewDialog(context, widget.data.id, user_id), // Call the showDialog here
-          child: Icon(Icons.edit, color: Colors.white,),
-          backgroundColor: Colors.grey.shade900,
-          shape: CircleBorder(),
-        ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              if (_speechToText.isNotListening && !_isListeningForCommands) {
+                _startListening();
+              } else if (_isListeningForCommands) {
+                _stopListeningForCommands();
+              } else {
+                _stopListening();
+              }
+              setState(() {
+                _isListeningAfterStep = !_isListeningAfterStep;
+              });
+            },
+            tooltip: 'Listen',
+            child: Icon(_speechToText.isNotListening ? Icons.mic_off : Icons.mic),
+            backgroundColor: _speechToText.isNotListening ? Colors.blue : Colors.red,
+          ),
+          Visibility(
+            visible: showFAB(_tabController),
+            child: FloatingActionButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      content: Container (
+                        width: MediaQuery.of(context).size.width,
+                        height: 150,
+                        color: Colors.white,
+                        child: TextField(
+                          keyboardType: TextInputType.multiline,
+                          minLines: 6,
+                          decoration: InputDecoration(
+                            hintText: 'Write your review here...',
+                          ),
+                          maxLines: null,
+                        ),
+                      ),
+                      actions: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 120,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text('cancel'),
+                                style: TextButton.styleFrom(
+                                  primary: Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(
+                                child: ElevatedButton(
+                                  onPressed: () {},
+                                  child: Text('Post Review'),
+                                  style: ElevatedButton.styleFrom(
+                                    primary: Colors.grey.shade900,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Icon(Icons.edit),
+              backgroundColor: Colors.grey.shade900,
+            ),
+          ),
+        ],
       ),
       body: ListView(
         controller: _scrollController,
@@ -550,9 +705,22 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                         style: TextStyle(fontSize: 14),
                       ),
                     ),
+                    ],
+                ),
 
-
-                  ],
+                SizedBox(height: 15),
+                ElevatedButton(
+                  onPressed: () => _speakRecipeSteps(_currentStepIndex),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.grey.shade900,
+                    padding: EdgeInsets.all(16),
+                  ),
+                  child: Text(
+                    'Read Steps Aloud',
+                    style: TextStyle(
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
                 // Recipe Title
                 Container(
