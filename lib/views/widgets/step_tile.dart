@@ -5,8 +5,9 @@ import '../../models/core/myRecipe.dart';
 
 class StepTile extends StatelessWidget {
   final RecipeStep data;
+  final int stepNumber;
 
-  StepTile({required this.data});
+  StepTile({required this.data, required this.stepNumber});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,7 @@ class StepTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            data.description,
+            'Step $stepNumber: ${data.description}',
             style: TextStyle(color: Colors.black, fontFamily: 'inter', fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ],

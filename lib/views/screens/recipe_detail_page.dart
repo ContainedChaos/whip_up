@@ -34,7 +34,7 @@ class RecipeDetailPage extends StatefulWidget {
 }
 
 Future<void> postReview(String recipeId, String userId, String comment, double rating, BuildContext context ) async {
-  final apiUrl = 'http://192.168.2.105:8000/postreview/';
+  final apiUrl = 'http://192.168.2.104:8000/postreview/';
   final response = await http.post(
     Uri.parse(apiUrl),
     headers: {
@@ -54,6 +54,7 @@ Future<void> postReview(String recipeId, String userId, String comment, double r
       SnackBar(
         content: Text('Your review has been posted!'),
         duration: Duration(seconds: 3),
+        backgroundColor: Colors.green,
       ),
     );
   } else {
@@ -63,7 +64,7 @@ Future<void> postReview(String recipeId, String userId, String comment, double r
 }
 
 Future<List<RecipeReview>> getReviews(String recipeId) async {
-  final apiUrl = 'http://192.168.2.105:8000/getreviews/$recipeId/';
+  final apiUrl = 'http://192.168.2.104:8000/getreviews/$recipeId/';
   print("RECIPEID in RECIPEDETAILPAGE: " + recipeId);
   final response = await http.get(Uri.parse(apiUrl));
 
@@ -112,6 +113,9 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0), // Set your desired border radius
+          ),
           content: SingleChildScrollView( // Ensure the dialog is scrollable if content exceeds screen height
             child: ListBody(
               children: [
@@ -123,7 +127,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                   decoration: InputDecoration(hintText: 'Write your review here...'),
                 ),
                 SizedBox(height: 20), // Provide some spacing between the text field and the rating bar
-                Text('Rate the recipe:', style: TextStyle(fontWeight: FontWeight.bold)),
                 RatingBar.builder(
                   initialRating: 0,
                   minRating: 1,
@@ -260,12 +263,12 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
     else {
       print('Reading step: ${widget.data.steps[_currentStepIndex].description}');
-      await flutterTts.speak(widget.data.steps[_currentStepIndex].description);
+      await flutterTts.speak("Step" + (_currentStepIndex + 1).toString() + ":" + widget.data.steps[_currentStepIndex].description);
 
       int stepLength = widget.data.steps[_currentStepIndex].description.length;
       int delayInSeconds = stepLength ~/ 10;
 
-      int minDelayInSeconds = 8;
+      int minDelayInSeconds = 6;
       int finalDelay = delayInSeconds > minDelayInSeconds ? delayInSeconds : minDelayInSeconds;
 
       await Future.delayed(Duration(seconds: finalDelay));
@@ -277,7 +280,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
   }
 
   Future<bool> getBookmarks(String user_id, String recipe_id) async {
-    final apiUrl = 'http://192.168.2.105:8000/getbookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.104:8000/getbookmark/$user_id/$recipe_id/';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -291,7 +294,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   Future<void> bookmarkRecipe(String user_id, String recipe_id) async {
     print("here");
-    final apiUrl = 'http://192.168.2.105:8000/bookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.104:8000/bookmark/$user_id/$recipe_id/';
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -315,7 +318,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
   }
 
   Future<bool> getLikes(String user_id, String recipe_id) async {
-    final apiUrl = 'http://192.168.2.105:8000/getlike/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.104:8000/getlike/$user_id/$recipe_id/';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -329,7 +332,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   Future<void> likeRecipe(String user_id, String recipe_id) async {
     print("here");
-    final apiUrl = 'http://192.168.2.105:8000/like/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.104:8000/like/$user_id/$recipe_id/';
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -384,7 +387,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    String basePath = 'http://192.168.2.105:8000/recipe-image/'; // Change this to your actual base URL
+    String basePath = 'http://192.168.2.104:8000/recipe-image/'; // Change this to your actual base URL
     String imagePath = widget.data.imageUrl; // Assuming data.imageUrl is the relative path
 
     String imageUrl = basePath + imagePath;
@@ -399,10 +402,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
           child: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            centerTitle: true,
-            title: Text('Recipe', style: TextStyle(fontFamily: 'inter',
-                fontWeight: FontWeight.w400,
-                fontSize: 16)),
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios, color: Colors.white),
               onPressed: () {
@@ -416,11 +415,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                 },
                 icon: SvgPicture.asset(
                   _isLiked == true
-                      ? 'assets/icons/like-filled.svg' // Show filled bookmark if _isBookmarked is true
-                      : 'assets/icons/like.svg', // Use your heart icon
+                      ? 'assets/icons/heartu-filled.svg' // Show filled bookmark if _isBookmarked is true
+                      : 'assets/icons/heartu.svg', // Use your heart icon
                   color: _isLiked == true ? Colors.red.shade700 : Colors.white,
-                  width: 30, // Set the width of the icon
-                  height: 120,
+                  height: 40,
                   // Set the color based on the like status
                 ),
               ),
@@ -436,7 +434,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                   color: _isBookmarked == true ? Colors.yellow.shade600 : Colors
                       .white,
                   width: 60, // Set the width of the icon
-                  height: 60,
+                  height: 50,
                 ),
               ),
             ],
@@ -468,59 +466,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
           Visibility(
             visible: showFAB(_tabController),
             child: FloatingActionButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      content: Container (
-                        width: MediaQuery.of(context).size.width,
-                        height: 150,
-                        color: Colors.white,
-                        child: TextField(
-                          keyboardType: TextInputType.multiline,
-                          minLines: 6,
-                          decoration: InputDecoration(
-                            hintText: 'Write your review here...',
-                          ),
-                          maxLines: null,
-                        ),
-                      ),
-                      actions: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 120,
-                              child: TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text('cancel'),
-                                style: TextButton.styleFrom(
-                                  primary: Colors.grey[600],
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Container(
-                                child: ElevatedButton(
-                                  onPressed: () {},
-                                  child: Text('Post Review'),
-                                  style: ElevatedButton.styleFrom(
-                                    primary: Colors.grey.shade900,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    );
-                  },
-                );
-              },
-              child: Icon(Icons.edit),
+              onPressed: () => _showReviewDialog(context, widget.data.id, user_id), // Call the showDialog here
+              child: Icon(Icons.edit, color: Colors.white,),
               backgroundColor: Colors.grey.shade900,
+              shape: CircleBorder(),
             ),
           ),
         ],
@@ -636,7 +585,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                           builder: (BuildContext context) {
                             int servings = noOfServings; // Default value for servings
                             return AlertDialog(
-                              backgroundColor: AppColor.secondarySoft,
+                              backgroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12), // Adjust the borderRadius as needed
                               ),
@@ -668,7 +617,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                                   onPressed: () {
                                     Navigator.of(context).pop(); // Close the dialog
                                   },
-                                  child: Text('Cancel'),
+                                  child: Text('Cancel', style: TextStyle(color: Colors.black)),
                                 ),
                                 ElevatedButton(
                                   onPressed: () {
@@ -685,7 +634,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
-                                  child: Text('Apply'),
+                                  child: Text('Apply', style: TextStyle(color: Colors.white)),
                                 ),
                               ],
                             );
@@ -705,8 +654,37 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                         style: TextStyle(fontSize: 14),
                       ),
                     ),
-                    ],
+                  ],
                 ),
+
+                // ElevatedButton(
+                //   onPressed: () => Navigator.of(context).push(
+                //     MaterialPageRoute(
+                //       builder: (context) => PosterProfilePage(userId: widget.data.userId),
+                //     ),
+                //   ),
+                //   style: ElevatedButton.styleFrom(
+                //     primary: Colors.grey.shade900,
+                //     padding: EdgeInsets.all(16),
+                //   ),
+                //   child: GestureDetector(
+                //     onTap: () {
+                //       Navigator.of(context).push(
+                //         MaterialPageRoute(
+                //           builder: (context) => UserProfilePage(userId: widget.data.userId),
+                //         ),
+                //       );
+                //     },
+                //     child: Text(
+                //       widget.data.username,
+                //       style: TextStyle(
+                //         fontSize: 14,
+                //       ),
+                //     ),
+                //   ),
+                // ),
+
+
 
                 SizedBox(height: 15),
                 ElevatedButton(
@@ -873,6 +851,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                 itemBuilder: (context, index) {
                   return StepTile(
                     data: widget.data.steps[index],
+                    stepNumber: index + 1,
                   );
                 },
               ),
