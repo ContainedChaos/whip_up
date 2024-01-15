@@ -8,7 +8,7 @@ import '../../screens/discover_delights.dart';
 import '../category_card.dart';
 
 Future<List<MyRecipe>> fetchRecipes() async {
-  final apiUrl = 'http://192.168.0.107:8000/getrecipes/';
+  final apiUrl = 'http://192.168.2.104:8000/getrecipes/';
 
   final Map<String, dynamic> userData = await AuthService().getUserData();
   final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -46,6 +46,7 @@ Future<List<MyRecipe>> fetchRecipes() async {
         );
       }).toList(),
       imageUrl: map['imageUrl'],
+      total_likes: map['total_likes'],
     )).toList();
 
     return recipes;

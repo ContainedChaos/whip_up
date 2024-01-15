@@ -22,7 +22,7 @@ import '../../model/user.dart';
 import '../../services/auth_service.dart';
 
 Future<List<MyRecipe>> fetchRecipes() async {
-  final apiUrl = 'http://192.168.0.107:8000/getrecipes/';
+  final apiUrl = 'http://192.168.2.104:8000/getrecipes/';
 
   final Map<String, dynamic> userData = await AuthService().getUserData();
   final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -60,8 +60,58 @@ Future<List<MyRecipe>> fetchRecipes() async {
         );
       }).toList(),
       imageUrl: map['imageUrl'],
+      total_likes: map['total_likes'],
     )).toList();
 
+    return recipes;
+  } else {
+    throw Exception('Failed to load recipes');
+  }
+}
+
+Future<List<MyRecipe>> fetchRecommendations() async {
+  final apiUrl = 'http://192.168.2.104:8000/recommendations/';
+
+  final Map<String, dynamic> userData = await AuthService().getUserData();
+  final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
+  final String profilePicture = userData['imageUrl'] ?? '';
+
+  final response = await http.get(
+    Uri.parse(apiUrl),
+    headers: {
+      "Authorization": "Bearer $accessToken",
+    },
+  );
+
+  if (response.statusCode == 200) {
+    var data = jsonDecode(response.body);
+    List<Map<String, dynamic>> recipeData = List<Map<String, dynamic>>.from(data['recipes']);
+
+    List<MyRecipe> recipes = recipeData.map((map) => MyRecipe(
+        id: map['_id'],
+        userId: map['userId'],
+        title: map['title'],
+        servings: map['servings'],
+        difficulty: map['difficulty'],
+        cookTime: map['cookTime'],
+        cuisine: map['cuisine'],
+        tags: List<String>.from(map['tags']),
+        ingredients: (map['ingredients'] as List<dynamic>).map((ingredientMap) {
+          return RecipeIngredient(
+            name: ingredientMap['name'],
+            quantity: ingredientMap['quantity'],
+          );
+        }).toList(),
+        steps: (map['steps'] as List<dynamic>).map((stepMap) {
+          return RecipeStep(
+            description: stepMap['description'],
+          );
+        }).toList(),
+        imageUrl: map['imageUrl'],
+        total_likes: map['total_likes'],
+      )
+    ).toList();
+    print('Recipes: $recipes');
     return recipes;
   } else {
     throw Exception('Failed to load recipes');
@@ -87,18 +137,20 @@ class _HomePageState extends State<HomePage> {
   final List<Recipe> newlyPostedRecipe = RecipeHelper.newlyPostedRecipe;
 
   late Future<List<MyRecipe>> futureRecipes;
+  late Future<List<MyRecipe>> recommendedRecipes;
 
   @override
   void initState() {
     super.initState();
     futureRecipes = fetchRecipes();
+    recommendedRecipes = fetchRecommendations();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: Text('WhipUp', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w700)),
+        title: Text('WhipUp', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w700, color: Colors.white)),
         showProfilePhoto: true,
         profilePhoto: AssetImage('assets/images/pp.jpg'),
         profilePhotoOnPressed: () {
@@ -212,17 +264,38 @@ class _HomePageState extends State<HomePage> {
                 // Content
                 Container(
                   height: 174,
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    physics: BouncingScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: recommendationRecipe.length,
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    separatorBuilder: (context, index) {
-                      return SizedBox(width: 16);
-                    },
-                    itemBuilder: (context, index) {
-                      return RecommendationRecipeCard(data: recommendationRecipe[index]);
+                  child: FutureBuilder<List<MyRecipe>>(
+                    future: recommendedRecipes,  // Assuming futureRecommendations is the Future<List<MyRecipe>> for recommended recipes
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        // Loading state
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else if (snapshot.hasError) {
+                        // Error state
+                        return Text('Error: ${snapshot.error}');
+                      } else if (snapshot.hasData) {
+                        // Data available
+                        List<MyRecipe> recommendedRecipes = snapshot.data!;
+                        return ListView.separated(
+                          shrinkWrap: true,
+                          physics: BouncingScrollPhysics(),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: recommendedRecipes.length,
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          separatorBuilder: (context, index) {
+                            return SizedBox(width: 16);
+                          },
+                          itemBuilder: (context, index) {
+                            // Display recommended recipe data using RecommendationRecipeCard.
+                            return RecommendationRecipeCard(data: recommendedRecipes[index]);
+                          },
+                        );
+                      } else {
+                        // No data available
+                        return Text('No recommendations available');
+                      }
                     },
                   ),
                 )

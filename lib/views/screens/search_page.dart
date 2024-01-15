@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:whip_up/models/core/myRecipe.dart';
 import 'package:whip_up/models/core/recipe.dart';
 import 'package:whip_up/models/helper/recipe_helper.dart';
 import 'package:whip_up/views/utils/AppColor.dart';
 import 'package:whip_up/views/widgets/modals/search_filter_model.dart';
 import 'package:whip_up/views/widgets/recipe_tile.dart';
+//import '../screens/auth/recipeDetails.dart';
+import 'package:whip_up/Screens/AddRecipe/recipeDetailScreen.dart';
+import 'package:http/http.dart' as http;
+
+import 'dart:convert';
+
+import '../../services/auth_service.dart';
+
 
 class SearchPage extends StatefulWidget {
   @override
@@ -14,176 +23,134 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   TextEditingController searchInputController = TextEditingController();
-  final List<Recipe> searchResult = RecipeHelper.searchResultRecipe;
+  List<MyRecipe> _fetchedRecipes = [];
+
+
+  void _performSearch() async {
+    var query = searchInputController.text;
+    if (query.isEmpty) return;
+
+    var url = Uri.parse('http://192.168.2.104:8000/search/?query=${Uri.encodeComponent(query)}');
+
+    // Fetch the access token
+    final Map<String, dynamic> userData = await AuthService().getUserData();
+    final String accessToken = userData['access_token'] ?? ''; // Handle null properly
+
+    var response = await http.get(
+      url,
+      headers: {
+        "Authorization": "Bearer $accessToken",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body)['results'] as List;
+      setState(() {
+        _fetchedRecipes = data.map((recipe) => MyRecipe.fromJson(recipe)).toList();
+      });
+    } else {
+      print('Failed to load recipes with status code: ${response.statusCode}');
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
-    print(searchInputController.text.isEmpty);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey.shade900,
         elevation: 0,
         centerTitle: true,
-        title: Text('Search Recipe', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16)),
+        title: Text(
+          'Search Recipe',
+          style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ), systemOverlayStyle: SystemUiOverlayStyle.light,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
-      body: ListView(
-        shrinkWrap: true,
-        physics: BouncingScrollPhysics(),
-        children: [
-          // Section 1 - Search
+      body: Column(
+        children: <Widget>[
           Container(
-            width: MediaQuery.of(context).size.width,
-            height: 145,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            height: 90,
             color: Colors.grey.shade900,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                // Search Bar
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Search TextField
-                      Expanded(
-                        child: Container(
-                          height: 50,
-                          margin: EdgeInsets.only(right: 15),
-                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.grey.shade800),
-                          child: TextField(
-                            controller: searchInputController,
-                            onChanged: (value) {
-                              print(searchInputController.text);
-                              setState(() {});
-                            },
-                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w400),
-                            maxLines: 1,
-                            textInputAction: TextInputAction.search,
-                            decoration: InputDecoration(
-                              hintText: 'What do you want to eat?',
-                              hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                              prefixIconConstraints: BoxConstraints(maxHeight: 20),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 17),
-                              focusedBorder: InputBorder.none,
-                              border: InputBorder.none,
-                              prefixIcon: Visibility(
-                                visible: (searchInputController.text.isEmpty) ? true : false,
-                                child: Container(
-                                  margin: EdgeInsets.only(left: 10, right: 12),
-                                  child: SvgPicture.asset(
-                                    'assets/icons/search.svg',
-                                    width: 20,
-                                    height: 20,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(right: 12),  // Right margin applied to the Container
+                    child: TextField(
+                      controller: searchInputController,
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                        hintText: 'What do you want to eat?',
+                        hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                        fillColor: Colors.grey.shade800,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        //prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.5)),
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.search, color: Colors.white),
+                          onPressed: _performSearch,
                         ),
                       ),
-                      // Filter Button
-                      GestureDetector(
-                        onTap: () {
-                          showModalBottomSheet(
-                              context: context,
-                              backgroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
-                              builder: (context) {
-                                return SearchFilterModel();
-                              });
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: AppColor.secondary,
-                          ),
-                          child: SvgPicture.asset('assets/icons/magic.svg',
-                            width: 25, // Set your desired width
-                            height: 25,
-                            color: Colors.black54
-                          ),
-                        ),
-                      )
-                    ],
+                      style: TextStyle(color: Colors.white),
+                      onSubmitted: (_) => _performSearch(),
+                    ),
                   ),
                 ),
-                // Search Keyword Recommendation
-                Container(
-                  height: 60,
-                  margin: EdgeInsets.only(top: 8),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    scrollDirection: Axis.horizontal,
-                    physics: BouncingScrollPhysics(),
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: popularRecipeKeyword.length,
-                    separatorBuilder: (context, index) {
-                      return SizedBox(width: 8);
-                    },
-                    itemBuilder: (context, index) {
-                      return Container(
-                        alignment: Alignment.topCenter,
-                        child: TextButton(
-                          onPressed: () {
-                            searchInputController.text = popularRecipeKeyword[index];
-                          },
-                          child: Text(
-                            popularRecipeKeyword[index],
-                            style: TextStyle(color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.w400),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.white.withOpacity(0.15), width: 1),
-                          ),
-                        ),
-                      );
-                    },
+                GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(20),
+                              topRight: Radius.circular(20),
+                            )),
+                        builder: (context) {
+                          return SearchFilterModel();
+                        });
+                  },
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: AppColor.secondary,
+                    ),
+                    child: SvgPicture.asset(
+                      'assets/icons/magic.svg',
+                      width: 25, // Set your desired width
+                      height: 25,
+                      color: Colors.black54,
+                    ),
                   ),
-                )
+                ),
               ],
             ),
           ),
-          // Section 2 - Search Result
-          // Container(
-          //   padding: EdgeInsets.all(16),
-          //   width: MediaQuery.of(context).size.width,
-          //   child: Column(
-          //     mainAxisAlignment: MainAxisAlignment.start,
-          //     crossAxisAlignment: CrossAxisAlignment.start,
-          //     children: [
-          //       Container(
-          //         margin: EdgeInsets.only(bottom: 15),
-          //         child: Text(
-          //           'This is the result of your search..',
-          //           style: TextStyle(color: Colors.grey, fontSize: 12),
-          //         ),
-          //       ),
-          //       ListView.separated(
-          //         shrinkWrap: true,
-          //         itemCount: searchResult.length,
-          //         physics: NeverScrollableScrollPhysics(),
-          //         separatorBuilder: (context, index) {
-          //           return SizedBox(height: 16);
-          //         },
-          //         itemBuilder: (context, index) {
-          //           return RecipeTile(
-          //             data: searchResult[index],
-          //           );
-          //         },
-          //       ),
-          //     ],
-          //   ),
-          // ),
+          Expanded(
+            child: _fetchedRecipes.isEmpty
+                ? Center(child: Text('No recipes found', style: TextStyle(color: Colors.white)))
+                : ListView.builder(
+              itemCount: _fetchedRecipes.length,
+              itemBuilder: (context, index) {
+                // Pass the recipe data to the RecipeTile
+                return RecipeTile(data: _fetchedRecipes[index]);
+              },
+            ),
+          ),
+
+
         ],
       ),
     );

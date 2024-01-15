@@ -10,10 +10,16 @@ import 'package:whip_up/views/widgets/ingridient_tile.dart';
 import 'package:whip_up/views/widgets/review_tile.dart';
 import 'package:whip_up/views/widgets/step_tile.dart';
 import 'dart:io';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+
 import '../../models/core/myRecipe.dart';
 import 'package:http/http.dart' as http;
-
+import '../../models/recipe_review.dart' ;
+import '../../Screens/Signup/api_service.dart';
 import '../../services/auth_service.dart';
+import '../../views/widgets/recipe_review_card.dart';
+
+
 
 class RecipeDetailPage extends StatefulWidget {
   final MyRecipe data;
@@ -25,19 +31,138 @@ class RecipeDetailPage extends StatefulWidget {
 
 }
 
+Future<void> postReview(String recipeId, String userId, String comment, double rating, BuildContext context ) async {
+  final apiUrl = 'http://192.168.2.104:8000/postreview/';
+  final response = await http.post(
+    Uri.parse(apiUrl),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: json.encode({
+      'recipe_id': recipeId,
+      'user_id': userId,
+      'comment': comment,
+      'rating': rating,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    // Handle success
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Your review has been posted!'),
+        duration: Duration(seconds: 3),
+      ),
+    );
+  } else {
+    // Handle error
+    throw Exception('Failed to post review');
+  }
+}
+
+Future<List<RecipeReview>> getReviews(String recipeId) async {
+  final apiUrl = 'http://192.168.2.104:8000/getreviews/$recipeId/';
+  print("RECIPEID in RECIPEDETAILPAGE: " + recipeId);
+  final response = await http.get(Uri.parse(apiUrl));
+
+  if (response.statusCode == 200) {
+    print('Response from getReviews: ${response.body}'); // Add this line to log the response
+    List<dynamic> reviewsJson = json.decode(response.body)['reviews'];
+    return reviewsJson.map((json) => RecipeReview.fromJson(json)).toList();
+  } else {
+    // Handle error
+    throw Exception('Failed to load reviews');
+  }
+}
+//
+
+
 class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProviderStateMixin {
   late TabController _tabController;
   late ScrollController _scrollController;
+  late Future<List<RecipeReview>> _reviewsFuture;
+
 
   bool? _isBookmarked;
+  bool? _isLiked;
   String user_id = '';
   int noOfServings = 0;
   int givenNoOfServings = 0;
   int customized = 0;
 
+  Future<void> refreshReviews() async {
+    setState(() {
+      _reviewsFuture = getReviews(widget.data.id); // Assuming _reviewsFuture is your Future<List<RecipeReview>>
+    });
+  }
+
+  void _showReviewDialog(BuildContext context, String recipeId, String userId) {
+    final TextEditingController _commentController = TextEditingController();
+    double _rating = 0; // Initialize rating variable here
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: SingleChildScrollView( // Ensure the dialog is scrollable if content exceeds screen height
+            child: ListBody(
+              children: [
+                TextField(
+                  controller: _commentController,
+                  keyboardType: TextInputType.multiline,
+                  minLines: 1,
+                  maxLines: 5,
+                  decoration: InputDecoration(hintText: 'Write your review here...'),
+                ),
+                SizedBox(height: 20), // Provide some spacing between the text field and the rating bar
+                Text('Rate the recipe:', style: TextStyle(fontWeight: FontWeight.bold)),
+                RatingBar.builder(
+                  initialRating: 0,
+                  minRating: 1,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                  itemBuilder: (context, _) => Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+                  onRatingUpdate: (rating) {
+                    _rating = rating; // Update the _rating variable
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  await postReview(recipeId, userId, _commentController.text, _rating, context);
+                  refreshReviews();
+                  Navigator.of(context).pop(); // Close the dialog
+                } catch (e) {
+                  // Handle the error, such as showing a snackbar with the error message
+                }
+              },
+              child: Text('Post Review'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
+    _reviewsFuture = getReviews(widget.data.id);
     _tabController = TabController(length: 3, vsync: this);
     _scrollController = ScrollController(initialScrollOffset: 0.0);
     _scrollController.addListener(() {
@@ -57,11 +182,18 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
       }).catchError((error) {
         print('Error: $error');
       });
+      getLikes(user_id, widget.data.id).then((value) {
+        setState(() {
+          _isLiked = value;
+        });
+      }).catchError((error) {
+        print('Error: $error');
+      });
     });
   }
 
   Future<bool> getBookmarks(String user_id, String recipe_id) async {
-    final apiUrl = 'http://192.168.0.107:8000/getbookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.104:8000/getbookmark/$user_id/$recipe_id/';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -75,7 +207,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   Future<void> bookmarkRecipe(String user_id, String recipe_id) async {
     print("here");
-    final apiUrl = 'http://192.168.0.107:8000/bookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.2.104:8000/bookmark/$user_id/$recipe_id/';
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -98,6 +230,43 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
     }
   }
 
+  Future<bool> getLikes(String user_id, String recipe_id) async {
+    final apiUrl = 'http://192.168.2.104:8000/getlike/$user_id/$recipe_id/';
+    final response = await http.get(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseData = json.decode(response.body);
+      String status = responseData['status'];
+      return status == "yes";
+    } else {
+      throw Exception('Failed to get like status');
+    }
+  }
+
+  Future<void> likeRecipe(String user_id, String recipe_id) async {
+    print("here");
+    final apiUrl = 'http://192.168.2.104:8000/like/$user_id/$recipe_id/';
+    final response = await http.post(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseData = json.decode(response.body);
+      String status = responseData['status'];
+
+      if (status == 'liked') {
+        // Update the _isBookmarked state based on the API response
+        setState(() {
+          _isLiked = true;
+        });
+      }
+      else if (status == 'unliked') {
+        setState(() {
+          _isLiked = false;
+        });
+      }
+    } else {
+      throw Exception('Failed to like recipe');
+    }
+  }
 
   Color appBarColor = Colors.transparent;
 
@@ -131,7 +300,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    String basePath = 'http://192.168.0.107:8000/recipe-image/'; // Change this to your actual base URL
+    String basePath = 'http://192.168.2.104:8000/recipe-image/'; // Change this to your actual base URL
     String imagePath = widget.data.imageUrl; // Assuming data.imageUrl is the relative path
 
     String imageUrl = basePath + imagePath;
@@ -147,7 +316,9 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,
-            title: Text('Recipe', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16)),
+            title: Text('Recipe', style: TextStyle(fontFamily: 'inter',
+                fontWeight: FontWeight.w400,
+                fontSize: 16)),
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios, color: Colors.white),
               onPressed: () {
@@ -157,18 +328,35 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
             actions: [
               IconButton(
                 onPressed: () {
+                  likeRecipe(user_id, widget.data.id);
+                },
+                icon: SvgPicture.asset(
+                  _isLiked == true
+                      ? 'assets/icons/like-filled.svg' // Show filled bookmark if _isBookmarked is true
+                      : 'assets/icons/like.svg', // Use your heart icon
+                  color: _isLiked == true ? Colors.red.shade700 : Colors.white,
+                  width: 30, // Set the width of the icon
+                  height: 120,
+                  // Set the color based on the like status
+                ),
+              ),
+              IconButton(
+                onPressed: () {
                   bookmarkRecipe(user_id, widget.data.id);
                 },
                 icon: SvgPicture.asset(
                   _isBookmarked == true
                       ? 'assets/icons/bookmark-filled.svg' // Show filled bookmark if _isBookmarked is true
-                      : 'assets/icons/bookmark.svg',       // Show regular bookmark if _isBookmarked is false
-                  color: _isBookmarked == true ? Colors.yellow.shade600 : Colors.white,
+                      : 'assets/icons/bookmark.svg',
+                  // Show regular bookmark if _isBookmarked is false
+                  color: _isBookmarked == true ? Colors.yellow.shade600 : Colors
+                      .white,
                   width: 60, // Set the width of the icon
                   height: 60,
                 ),
               ),
-            ], systemOverlayStyle: SystemUiOverlayStyle.light,
+            ],
+            systemOverlayStyle: SystemUiOverlayStyle.light,
           ),
         ),
       ),
@@ -176,58 +364,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
       floatingActionButton: Visibility(
         visible: showFAB(_tabController),
         child: FloatingActionButton(
-          onPressed: () {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    content: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 150,
-                      color: Colors.white,
-                      child: TextField(
-                        keyboardType: TextInputType.multiline,
-                        minLines: 6,
-                        decoration: InputDecoration(
-                          hintText: 'Write your review here...',
-                        ),
-                        maxLines: null,
-                      ),
-                    ),
-                    actions: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 120,
-                            child: TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text('cancel'),
-                              style: TextButton.styleFrom(
-                                primary: Colors.grey[600],
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              child: ElevatedButton(
-                                onPressed: () {},
-                                child: Text('Post Review'),
-                                style: ElevatedButton.styleFrom(
-                                  primary: Colors.grey.shade900,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  );
-                });
-          },
-          child: Icon(Icons.edit),
+          onPressed: () => _showReviewDialog(context, widget.data.id, user_id), // Call the showDialog here
+          child: Icon(Icons.edit, color: Colors.white,),
           backgroundColor: Colors.grey.shade900,
+          shape: CircleBorder(),
         ),
       ),
       body: ListView(
@@ -243,7 +383,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
             // },
             child: Container(
               height: 280,
-              width: MediaQuery.of(context).size.width,
+              width: MediaQuery
+                  .of(context)
+                  .size
+                  .width,
               decoration: BoxDecoration(
                   image: DecorationImage(
                       image: NetworkImage(imageUrl),
@@ -251,13 +394,19 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
               child: Container(
                 decoration: BoxDecoration(gradient: AppColor.linearBlackTop),
                 height: 280,
-                width: MediaQuery.of(context).size.width,
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width,
               ),
             ),
           ),
           // Section 2 - Recipe Info
           Container(
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery
+                .of(context)
+                .size
+                .width,
             padding: EdgeInsets.only(top: 20, bottom: 30, left: 16, right: 16),
             color: Colors.grey.shade900,
             child: Column(
@@ -295,6 +444,20 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                       ),
                     ),
                     SizedBox(width: 20),
+                    SvgPicture.asset(
+                      'assets/icons/like.svg',
+                      color: Colors.white,
+                      width: 17,
+                      height: 17,
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(left: 5),
+                      child: Text(
+                        widget.data.total_likes.toString(),
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                    SizedBox(width: 20),
                     Image.asset(
                       'assets/icons/wedding-dinner.png',
                       color: Colors.white,
@@ -308,6 +471,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                         style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
                     ),
+
                     SizedBox(width: 20),
                     TextButton(
                       onPressed: () {
@@ -395,7 +559,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                   margin: EdgeInsets.only(bottom: 12, top: 16),
                   child: Text(
                     widget.data.title,
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600, fontFamily: 'inter'),
+                    style: TextStyle(color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'inter'),
                   ),
                 ),
                 // Recipe Description
@@ -409,7 +576,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                     SizedBox(width: 7),
                     Text(
                       widget.data.cookTime,
-                      style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14),
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.9), fontSize: 14),
                     ),
                   ],
                 ),
@@ -442,7 +610,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
           // Tabbar ( Ingridients, Tutorial, Reviews )
           Container(
             height: 60,
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery
+                .of(context)
+                .size
+                .width,
             color: AppColor.secondary,
             child: TabBar(
               controller: _tabController,
@@ -453,14 +624,15 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
               },
               labelColor: Colors.black,
               unselectedLabelColor: Colors.black.withOpacity(0.6),
-              labelStyle: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w500),
+              labelStyle: TextStyle(
+                  fontFamily: 'inter', fontWeight: FontWeight.w500),
               indicatorColor: Colors.black,
               tabs: [
                 Tab(
                   text: 'Ingredients',
                 ),
                 Tab(
-                  text: 'Tutorial',
+                  text: 'Tutorials',
                 ),
                 Tab(
                   text: 'Reviews',
@@ -473,7 +645,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
             index: _tabController.index,
             children: [
               // Ingridients
-              // Inside the ListView.builder in the RecipeDetailPage
               ListView.builder(
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
@@ -525,7 +696,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                   );
                 },
               ),
-
               // Tutorials
               ListView.builder(
                 shrinkWrap: true,
@@ -539,19 +709,37 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                 },
               ),
               // Reviews
-              // ListView.builder(
-              //   shrinkWrap: true,
-              //   padding: EdgeInsets.zero,
-              //   itemCount: widget.data.reviews.length,
-              //   physics: NeverScrollableScrollPhysics(),
-              //   itemBuilder: (context, index) {
-              //     return ReviewTile(data: widget.data.reviews[index]);
-              //   },
-              // )
+              FutureBuilder<List<RecipeReview>>(
+                future: _reviewsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (snapshot.hasData) {
+                    List<RecipeReview> reviews = snapshot.data!;
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      padding: EdgeInsets.zero,
+                      itemCount: reviews.length,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        return RecipeReviewCard(review: reviews[index]);
+                      },
+                    );
+                  } else {
+                    return Center(child: Text('No reviews yet'));
+                  }
+                },
+              ),
+              // end of FutureBuilder
             ],
           ),
+          // end of IndexedStack
         ],
       ),
+      // end of ListView
+      // other Scaffold properties...
     );
   }
 }

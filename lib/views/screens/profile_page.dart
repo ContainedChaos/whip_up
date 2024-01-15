@@ -58,7 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: Colors.grey.shade900,
         elevation: 0,
         centerTitle: true,
-        title: Text('My Profile', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16)),
+        title: Text('My Profile', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white)),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () {
@@ -109,7 +109,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: ClipOval(
                       child: _user.image != null && _user.image!.isNotEmpty
                           ? Image.network(
-                        'http://192.168.0.107:8000/profile-picture/${_user.image}',
+                        'http://192.168.2.104:8000/profile-picture/${_user.image}',
                           fit: BoxFit.cover,
                         loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                           if (loadingProgress == null) {
@@ -182,13 +182,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   Icon(
                     Icons.logout, // Replace with the logout icon you want
-                    size: 24, // Adjust the size of the icon as needed
+                    size: 24,
+                    color: Colors.white,// Adjust the size of the icon as needed
                   ),
                   SizedBox(width: 8), // Add spacing between the icon and text
                   Text(
                     'Log Out',
                     style: TextStyle(
-                      fontSize: 14, // Increase the font size
+                      fontSize: 14,
+                      color: Colors.white// Increase the font size
                       // You can set other text styles here if needed
                     ),
                   ),

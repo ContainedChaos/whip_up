@@ -42,7 +42,7 @@ class _BookmarksPageState extends State<BookmarksPage> {
 
 
   Future<List<MyRecipe>> fetchBookmarkedRecipes() async {
-    final apiUrl = 'http://192.168.0.103:8000/getbookmarkedrecipes/';
+    final apiUrl = 'http://192.168.2.104:8000/getbookmarkedrecipes/';
 
     final Map<String, dynamic> userData = await AuthService().getUserData();
     final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -99,7 +99,8 @@ class _BookmarksPageState extends State<BookmarksPage> {
             style: TextStyle(
                 fontFamily: 'inter',
                 fontWeight: FontWeight.w500,
-                fontSize: 20)),
+                fontSize: 20,
+            color: Colors.white)),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       body: GestureDetector(

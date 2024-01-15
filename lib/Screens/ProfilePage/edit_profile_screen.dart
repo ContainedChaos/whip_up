@@ -73,7 +73,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
 
         Response response = await dio.post(
-          'http://192.168.0.107:8000/upload-image/',
+          'http://192.168.2.104:8000/upload-image/',
           data: formData,
           options: Options(headers: {'Authorization': token}),
         );
@@ -137,7 +137,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey.shade900,
-        title: Text("Edit Profile"),
+        title: Text("Edit Profile", style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white)),
         automaticallyImplyLeading: false,
       ),
       body: Padding(
@@ -169,7 +169,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           )
                               : (widget.user.image != null && widget.user.image!.isNotEmpty
                               ? Image.network(
-                            'http://192.168.0.107:8000/profile-picture/${widget.user.image}',
+                            'http://192.168.2.104:8000/profile-picture/${widget.user.image}',
                             height: 130,
                             width: 130,
                             fit: BoxFit.cover,
@@ -306,7 +306,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   borderRadius: BorderRadius.circular(10), // Adjust the border radius as needed
                 ),
               ),
-              child: Text("Update Profile"),
+              child: Text("Update Profile", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
