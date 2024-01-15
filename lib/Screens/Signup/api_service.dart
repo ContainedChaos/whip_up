@@ -5,12 +5,12 @@ import '../../model/user.dart';
 
 class ApiService {
   final String baseUrl =
-      'http://192.168.2.104:8000'; // Replace with your server address
+      'http://192.168.2.105:8000'; // Replace with your server address
 
   Future<Map<String, dynamic>> signup(
       String username, String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://192.168.2.104:8000/signup/'),
+      Uri.parse('http://192.168.2.105:8000/signup/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(
           {'username': username, 'email': email, 'password': password}),
@@ -32,7 +32,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://192.168.2.104:8000/login/'),
+      Uri.parse('http://192.168.2.105:8000/login/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({"email": email, "password": password}),
     );
@@ -50,7 +50,7 @@ class ApiService {
     print(originalEmail);
     print(newUsername);
     final response = await http.put(
-      Uri.parse('http://192.168.2.104:8000/profile/$originalEmail/'),  // Adjusted the URL here
+      Uri.parse('http://192.168.2.105:8000/profile/$originalEmail/'),  // Adjusted the URL here
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'originalEmail': originalEmail,
@@ -68,7 +68,19 @@ class ApiService {
   // fetch user profile
   Future<User> fetchUserProfile(String email) async {
     final response = await http.get(
-      Uri.parse('http://192.168.2.104:8000/profile/$email/'),
+      Uri.parse('http://192.168.2.105:8000/profile/$email/'),
+    );
+
+    if (response.statusCode == 200) {
+      return User.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load profile');
+    }
+  }
+
+  Future<User> fetchPosterProfile(String userId) async {
+    final response = await http.get(
+      Uri.parse('http://192.168.2.105:8000/posterprofile/$userId/'),
     );
 
     if (response.statusCode == 200) {
