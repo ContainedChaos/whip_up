@@ -22,7 +22,7 @@ import '../../model/user.dart';
 import '../../services/auth_service.dart';
 
 Future<List<MyRecipe>> fetchRecipes() async {
-  final apiUrl = 'http://192.168.2.104:8000/getrecipes/';
+  final apiUrl = 'http://192.168.2.105:8000/getrecipes/';
 
   final Map<String, dynamic> userData = await AuthService().getUserData();
   final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -61,6 +61,7 @@ Future<List<MyRecipe>> fetchRecipes() async {
       }).toList(),
       imageUrl: map['imageUrl'],
       total_likes: map['total_likes'],
+      username: map['username'],
     )).toList();
 
     return recipes;
@@ -70,7 +71,7 @@ Future<List<MyRecipe>> fetchRecipes() async {
 }
 
 Future<List<MyRecipe>> fetchRecommendations() async {
-  final apiUrl = 'http://192.168.2.104:8000/recommendations/';
+  final apiUrl = 'http://192.168.2.105:8000/recommendations/';
 
   final Map<String, dynamic> userData = await AuthService().getUserData();
   final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -109,6 +110,7 @@ Future<List<MyRecipe>> fetchRecommendations() async {
         }).toList(),
         imageUrl: map['imageUrl'],
         total_likes: map['total_likes'],
+        username: map['username'],
       )
     ).toList();
     print('Recipes: $recipes');

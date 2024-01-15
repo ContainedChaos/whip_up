@@ -7,6 +7,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:whip_up/models/core/recipe.dart';
 import 'package:whip_up/views/screens/full_screen_image.dart';
+import 'package:whip_up/views/screens/poster_profile.dart';
 import 'package:whip_up/views/utils/AppColor.dart';
 import 'package:whip_up/views/widgets/ingridient_tile.dart';
 import 'package:whip_up/views/widgets/review_tile.dart';
@@ -265,7 +266,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
       int stepLength = widget.data.steps[_currentStepIndex].description.length;
       int delayInSeconds = stepLength ~/ 10;
 
-      int minDelayInSeconds = 8;
+      int minDelayInSeconds = 6;
       int finalDelay = delayInSeconds > minDelayInSeconds ? delayInSeconds : minDelayInSeconds;
 
       await Future.delayed(Duration(seconds: finalDelay));
@@ -707,6 +708,35 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                     ),
                     ],
                 ),
+
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => PosterProfilePage(userId: widget.data.userId),
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.grey.shade900,
+                    padding: EdgeInsets.all(16),
+                  ),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => PosterProfilePage(userId: widget.data.userId),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      widget.data.username,
+                      style: TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+
+
 
                 SizedBox(height: 15),
                 ElevatedButton(

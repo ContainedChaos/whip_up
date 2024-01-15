@@ -42,6 +42,7 @@ class MyRecipe {
   final List<RecipeStep> steps;
   final String imageUrl;
   final int total_likes;
+  final String username;
 
   MyRecipe({
     required this.id,
@@ -56,6 +57,7 @@ class MyRecipe {
     required this.steps,
     required this.imageUrl,
     required this.total_likes,
+    required this.username,
   });
 
   factory MyRecipe.fromJson(Map<String, dynamic> json) {
@@ -77,6 +79,7 @@ class MyRecipe {
       }).toList(),
       imageUrl: json['imageUrl'] ?? '',
       total_likes: json['total_likes'] ?? 0,
+      username: json['username'] ?? '',
     );
   }
 }
