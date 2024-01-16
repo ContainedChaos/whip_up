@@ -35,7 +35,7 @@ class RecipeDetailPage extends StatefulWidget {
 }
 
 Future<void> postReview(String recipeId, String userId, String comment, double rating, BuildContext context ) async {
-  final apiUrl = 'http://192.168.2.105:8000/postreview/';
+  final apiUrl = 'http://192.168.0.105:8000/postreview/';
   final response = await http.post(
     Uri.parse(apiUrl),
     headers: {
@@ -64,7 +64,7 @@ Future<void> postReview(String recipeId, String userId, String comment, double r
 }
 
 Future<List<RecipeReview>> getReviews(String recipeId) async {
-  final apiUrl = 'http://192.168.2.105:8000/getreviews/$recipeId/';
+  final apiUrl = 'http://192.168.0.105:8000/getreviews/$recipeId/';
   print("RECIPEID in RECIPEDETAILPAGE: " + recipeId);
   final response = await http.get(Uri.parse(apiUrl));
 
@@ -228,6 +228,12 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
       else if (command.contains('again')) {
         _speakRecipeSteps(_currentStepIndex);
       }
+      else if (command.contains('read the steps')) {
+        setState(() {
+          _currentStepIndex = 0;
+        });
+        _speakRecipeSteps(_currentStepIndex);
+      }
     }
   }
 
@@ -248,6 +254,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
     await flutterTts.setLanguage("en-US");
 
     if (_currentStepIndex < 0){
+      print("here");
       setState(() {
         _currentStepIndex = 0;
       });
@@ -255,13 +262,16 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
     }
 
     else if (_currentStepIndex > widget.data.steps.length - 1){
-      _currentStepIndex = 0;
+      print("here2");
+      setState(() {
+        _currentStepIndex = 0;
+      });
       await flutterTts.speak("You have reached the end");
     }
 
     else {
       print('Reading step: ${widget.data.steps[_currentStepIndex].description}');
-      await flutterTts.speak(widget.data.steps[_currentStepIndex].description);
+      await flutterTts.speak("Step" + (_currentStepIndex + 1).toString() + ":" + widget.data.steps[_currentStepIndex].description);
 
       int stepLength = widget.data.steps[_currentStepIndex].description.length;
       int delayInSeconds = stepLength ~/ 10;
@@ -272,13 +282,13 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
       await Future.delayed(Duration(seconds: finalDelay));
 
       await _startListening();
-      await Future.delayed(Duration(seconds: 7));
+      await Future.delayed(Duration(seconds: 6));
       await _stopListening();
     }
   }
 
   Future<bool> getBookmarks(String user_id, String recipe_id) async {
-    final apiUrl = 'http://192.168.2.105:8000/getbookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.0.105:8000/getbookmark/$user_id/$recipe_id/';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -292,7 +302,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   Future<void> bookmarkRecipe(String user_id, String recipe_id) async {
     print("here");
-    final apiUrl = 'http://192.168.2.105:8000/bookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.0.105:8000/bookmark/$user_id/$recipe_id/';
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -316,7 +326,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
   }
 
   Future<bool> getLikes(String user_id, String recipe_id) async {
-    final apiUrl = 'http://192.168.2.105:8000/getlike/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.0.105:8000/getlike/$user_id/$recipe_id/';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -330,7 +340,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   Future<void> likeRecipe(String user_id, String recipe_id) async {
     print("here");
-    final apiUrl = 'http://192.168.2.105:8000/like/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.0.105:8000/like/$user_id/$recipe_id/';
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -385,7 +395,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    String basePath = 'http://192.168.2.105:8000/recipe-image/'; // Change this to your actual base URL
+    String basePath = 'http://192.168.0.105:8000/recipe-image/'; // Change this to your actual base URL
     String imagePath = widget.data.imageUrl; // Assuming data.imageUrl is the relative path
 
     String imageUrl = basePath + imagePath;
@@ -450,10 +460,20 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
-            onPressed: () {
-              if (_speechToText.isNotListening && !_isListeningForCommands) {
-                _startListening();
-              } else if (_isListeningForCommands) {
+            onPressed: () async {
+              if (_speechToText.isNotListening && !_isListeningForCommands && _currentStepIndex == 0) {
+                await flutterTts.setLanguage("en-US");
+                await flutterTts.speak("How can I help you today?");
+                await _startListening();
+                await Future.delayed(Duration(seconds: 6));
+                await _stopListening();
+              }
+              else if (_speechToText.isNotListening && !_isListeningForCommands && _currentStepIndex != 0) {
+                await _startListening();
+                await Future.delayed(Duration(seconds: 6));
+                await _stopListening();
+              }
+              else if (_isListeningForCommands) {
                 _stopListeningForCommands();
               } else {
                 _stopListening();
@@ -732,23 +752,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                       style: TextStyle(
                         fontSize: 14,
                       ),
-                    ),
-                  ),
-                ),
-
-
-
-                SizedBox(height: 15),
-                ElevatedButton(
-                  onPressed: () => _speakRecipeSteps(_currentStepIndex),
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.grey.shade900,
-                    padding: EdgeInsets.all(16),
-                  ),
-                  child: Text(
-                    'Read Steps Aloud',
-                    style: TextStyle(
-                      fontSize: 14,
                     ),
                   ),
                 ),
