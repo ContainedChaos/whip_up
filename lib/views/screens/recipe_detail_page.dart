@@ -26,7 +26,11 @@ import '../../views/widgets/recipe_review_card.dart';
 
 class RecipeDetailPage extends StatefulWidget {
   final MyRecipe data;
-  RecipeDetailPage({required this.data});
+  int total_likes;
+
+  RecipeDetailPage({required this.data})
+      : total_likes = data.total_likes,
+        super();
 
   @override
   _RecipeDetailPageState createState() => _RecipeDetailPageState();
@@ -35,7 +39,7 @@ class RecipeDetailPage extends StatefulWidget {
 }
 
 Future<void> postReview(String recipeId, String userId, String comment, double rating, BuildContext context ) async {
-  final apiUrl = 'http://192.168.2.105:8000/postreview/';
+  final apiUrl = 'http://192.168.0.106:8000/postreview/';
   final response = await http.post(
     Uri.parse(apiUrl),
     headers: {
@@ -64,7 +68,7 @@ Future<void> postReview(String recipeId, String userId, String comment, double r
 }
 
 Future<List<RecipeReview>> getReviews(String recipeId) async {
-  final apiUrl = 'http://192.168.2.105:8000/getreviews/$recipeId/';
+  final apiUrl = 'http://192.168.0.106:8000/getreviews/$recipeId/';
   print("RECIPEID in RECIPEDETAILPAGE: " + recipeId);
   final response = await http.get(Uri.parse(apiUrl));
 
@@ -261,7 +265,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
     else {
       print('Reading step: ${widget.data.steps[_currentStepIndex].description}');
-      await flutterTts.speak(widget.data.steps[_currentStepIndex].description);
+      await flutterTts.speak("Step" + (_currentStepIndex + 1).toString() + ":" + widget.data.steps[_currentStepIndex].description);
 
       int stepLength = widget.data.steps[_currentStepIndex].description.length;
       int delayInSeconds = stepLength ~/ 10;
@@ -278,7 +282,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
   }
 
   Future<bool> getBookmarks(String user_id, String recipe_id) async {
-    final apiUrl = 'http://192.168.2.105:8000/getbookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.0.106:8000/getbookmark/$user_id/$recipe_id/';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -292,7 +296,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   Future<void> bookmarkRecipe(String user_id, String recipe_id) async {
     print("here");
-    final apiUrl = 'http://192.168.2.105:8000/bookmark/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.0.106:8000/bookmark/$user_id/$recipe_id/';
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -316,7 +320,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
   }
 
   Future<bool> getLikes(String user_id, String recipe_id) async {
-    final apiUrl = 'http://192.168.2.105:8000/getlike/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.0.106:8000/getlike/$user_id/$recipe_id/';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -330,7 +334,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   Future<void> likeRecipe(String user_id, String recipe_id) async {
     print("here");
-    final apiUrl = 'http://192.168.2.105:8000/like/$user_id/$recipe_id/';
+    final apiUrl = 'http://192.168.0.106:8000/like/$user_id/$recipe_id/';
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -341,11 +345,13 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
         // Update the _isBookmarked state based on the API response
         setState(() {
           _isLiked = true;
+          widget.total_likes++;
         });
       }
       else if (status == 'unliked') {
         setState(() {
           _isLiked = false;
+          widget.total_likes--;
         });
       }
     } else {
@@ -385,7 +391,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    String basePath = 'http://192.168.2.105:8000/recipe-image/'; // Change this to your actual base URL
+    String basePath = 'http://192.168.0.106:8000/recipe-image/'; // Change this to your actual base URL
     String imagePath = widget.data.imageUrl; // Assuming data.imageUrl is the relative path
 
     String imageUrl = basePath + imagePath;
@@ -400,10 +406,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
           child: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            centerTitle: true,
-            title: Text('Recipe', style: TextStyle(fontFamily: 'inter',
-                fontWeight: FontWeight.w400,
-                fontSize: 16)),
+
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios, color: Colors.white),
               onPressed: () {
@@ -417,11 +420,11 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                 },
                 icon: SvgPicture.asset(
                   _isLiked == true
-                      ? 'assets/icons/like-filled.svg' // Show filled bookmark if _isBookmarked is true
-                      : 'assets/icons/like.svg', // Use your heart icon
+                      ? 'assets/icons/heartu-filled.svg' // Show filled bookmark if _isBookmarked is true
+                      : 'assets/icons/heartu.svg', // Use your heart icon
                   color: _isLiked == true ? Colors.red.shade700 : Colors.white,
-                  width: 30, // Set the width of the icon
-                  height: 120,
+                   // Set the width of the icon
+                  height: 40,
                   // Set the color based on the like status
                 ),
               ),
@@ -609,7 +612,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                     Container(
                       margin: EdgeInsets.only(left: 5),
                       child: Text(
-                        widget.data.total_likes.toString(),
+                        widget.total_likes.toString(),
                         style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
@@ -903,9 +906,11 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                 itemBuilder: (context, index) {
                   return StepTile(
                     data: widget.data.steps[index],
+                    stepNumber: index + 1,
                   );
                 },
               ),
+
               // Reviews
               FutureBuilder<List<RecipeReview>>(
                 future: _reviewsFuture,
