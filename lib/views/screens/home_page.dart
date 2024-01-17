@@ -18,15 +18,21 @@ import 'package:whip_up/views/widgets/recipe_tile.dart';
 import 'package:whip_up/views/widgets/recommendation_recipe_card.dart';
 import 'package:http/http.dart' as http;
 import 'package:whip_up/services/auth_service.dart';
+import 'package:whip_up/Screens/Login/components/body.dart';
 import '../../model/user.dart';
 import '../../services/auth_service.dart';
+import 'notification_provider.dart';
+import 'notification_service.dart';
+import 'package:provider/provider.dart';
+import 'package:whip_up/views/screens/notification_provider.dart';
 
 Future<List<MyRecipe>> fetchRecipes() async {
-  final apiUrl = 'http://192.168.0.106:8000/getrecipes/';
+  final apiUrl = 'http://192.168.2.107:8000/getrecipes/';
 
   final Map<String, dynamic> userData = await AuthService().getUserData();
   final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
   final String profilePicture = userData['imageUrl'] ?? '';
+  final String userId = userData['user_id'] ?? '';
 
   final response = await http.get(
     Uri.parse(apiUrl),
@@ -71,7 +77,7 @@ Future<List<MyRecipe>> fetchRecipes() async {
 }
 
 Future<List<MyRecipe>> fetchRecommendations() async {
-  final apiUrl = 'http://192.168.0.106:8000/recommendations/';
+  final apiUrl = 'http://192.168.2.107:8000/recommendations/';
 
   final Map<String, dynamic> userData = await AuthService().getUserData();
   final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -132,10 +138,12 @@ List<MyRecipe> filterTopLikedRecipes(List<MyRecipe> allRecipes) {
 class HomePage extends StatefulWidget {
   final String userName;
   final String userEmail;
+  //final String userId;
 
   HomePage({
     required this.userName,
     required this.userEmail,
+    //required this.userId
   });
 
   @override
@@ -157,6 +165,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     getProfilePhotoUrl();
     futureRecipes = fetchRecipes();
+    _fetchAndSetUnreadNotificationCount();
 
     futureRecipes.then((recipes) {
       fetchedRecipes = Future.value(filterTopLikedRecipes(recipes));
@@ -166,13 +175,29 @@ class _HomePageState extends State<HomePage> {
     recommendedRecipes = fetchRecommendations();
   }
 
+  Future<void> _fetchAndSetUnreadNotificationCount() async {
+    try {
+      final authService = AuthService();
+      final userData = await authService.getUserData();
+      final String userId = userData['user_id'] ?? '';
+      final notificationService = NotificationService('http://192.168.2.107:8000');
+      final count = await notificationService.getUnreadNotificationCount(userId);
+      Provider.of<NotificationProvider>(context, listen: false).setUnreadCount(count);
+    } catch (error) {
+      print('Error fetching notification count: $error');
+    }
+  }
+
   Future<void> _refresh() async {
-    // Add the logic to fetch and refresh your data here
+    await _fetchAndSetUnreadNotificationCount(); // Wait for notification count to be fetched and set
+
     setState(() {
       futureRecipes = fetchRecipes();
       recommendedRecipes = fetchRecommendations();
     });
   }
+
+
 
   void getProfilePhotoUrl() async {
     try {
@@ -189,7 +214,7 @@ class _HomePageState extends State<HomePage> {
         title: Text('WhipUp', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w700, color: Colors.white)),
         showProfilePhoto: true,
         profilePhoto: profilePhotoUrl.isNotEmpty
-            ? NetworkImage('http://192.168.0.106:8000/profile-picture/$profilePhotoUrl')
+            ? NetworkImage('http://192.168.2.107:8000/profile-picture/$profilePhotoUrl')
             : null, // Provide a default image asset
 
     profilePhotoOnPressed: () {
@@ -361,48 +386,41 @@ class _HomePageState extends State<HomePage> {
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'inter'),
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => NewlyPostedPage(recipes: futureRecipes)));
-                      },
-                      child: Text('see all'),
-                      style: TextButton.styleFrom(primary: Colors.black, textStyle: TextStyle(fontWeight: FontWeight.w400, fontSize: 14)),
-                    ),
                   ],
                 ),
                 // Content - Use ListView.builder to display newly posted recipes
-            FutureBuilder<List<MyRecipe>>(
-              future: futureRecipes,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  // Loading state
-                  return CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  // Error state
-                  return Text('Error: ${snapshot.error}');
-                } else if (snapshot.hasData) {
-                  // Data available
-                  List<MyRecipe> allRecipes = snapshot.data!;
-                  List<MyRecipe> latestRecipes = allRecipes.reversed.take(6).toList();
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: latestRecipes.length,
-                    itemBuilder: (context, index) {
-                      // Display your recipe data using RecipeTile with added space
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 16.0), // Adjust the value (16.0) for the desired space
-                        child: RecipeTile(data: latestRecipes[index]),
+                FutureBuilder<List<MyRecipe>>(
+                  future: futureRecipes,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      // Loading state
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      // Error state
+                      return Text('Error: ${snapshot.error}');
+                    } else if (snapshot.hasData) {
+                      // Data available
+                      List<MyRecipe> allRecipes = snapshot.data!;
+                      List<MyRecipe> latestRecipes = allRecipes.reversed.take(6).toList();
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: latestRecipes.length,
+                        itemBuilder: (context, index) {
+                          // Display your recipe data using RecipeTile with added space
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: 16.0), // Adjust the value (16.0) for the desired space
+                            child: RecipeTile(data: latestRecipes[index]),
+                          );
+                        },
                       );
-                    },
-                  );
-                } else {
-                  // No data available
-                  return Text('No data available');
-                }
-              },
-            ),
-            ],
+                    } else {
+                      // No data available
+                      return Text('No data available');
+                    }
+                  },
+                ),
+              ],
             ),
           ),
         ],
