@@ -100,7 +100,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
-    _notificationService = NotificationService('http://192.168.0.100:8000');
+    _notificationService = NotificationService('http://192.168.2.105:8000');
     _notifications = _fetchNotifications();
     //_markNotificationsAsRead();
     _startNotificationPolling();

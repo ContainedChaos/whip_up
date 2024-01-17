@@ -9,7 +9,7 @@ class RecommendationRecipeCard extends StatelessWidget {
   RecommendationRecipeCard({required this.data});
   @override
   Widget build(BuildContext context) {
-    String basePath = 'http://192.168.2.104:8000/recipe-image/'; // Change this to your actual base URL
+    String basePath = 'http://192.168.2.105:8000/recipe-image/'; // Change this to your actual base URL
     String imagePath = data.imageUrl; // Assuming data.imageUrl is the relative path
 
     String imageUrl = basePath + imagePath;

@@ -15,7 +15,7 @@ class ForgotPasswordScreen extends StatelessWidget {
     print(email);
 
     final response = await http.post(
-      Uri.parse('http://192.168.2.104:8000/send-otp/'),
+      Uri.parse('http://192.168.2.105:8000/send-otp/'),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         'email': email,

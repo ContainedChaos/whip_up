@@ -32,7 +32,7 @@ class _DeliciousTodayPageState extends State<DeliciousTodayPage> {
         backgroundColor: Colors.grey.shade900,
         elevation: 0,
         centerTitle: true,
-        title: Text('Delicious Today', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white)),
+        title: Text('All Recipes', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white)),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: Colors.white,),
           onPressed: () {

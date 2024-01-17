@@ -31,7 +31,7 @@ class _BodyState extends State<Body> {
 
   Future<void> _fetchAndSetUnreadNotificationCount(String userId) async {
     try {
-      final notificationService = NotificationService('http://192.168.0.100:8000');
+      final notificationService = NotificationService('http://192.168.2.105:8000');
       final count = await notificationService.getUnreadNotificationCount(userId);
       Provider.of<NotificationProvider>(context, listen: false).setUnreadCount(count);
     } catch (error) {

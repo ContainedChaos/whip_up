@@ -73,7 +73,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
 
         Response response = await dio.post(
-          'http://192.168.2.104:8000/upload-image/',
+          'http://192.168.2.105:8000/upload-image/',
           data: formData,
           options: Options(headers: {'Authorization': token}),
         );
@@ -169,7 +169,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           )
                               : (widget.user.image != null && widget.user.image!.isNotEmpty
                               ? Image.network(
-                            'http://192.168.2.104:8000/profile-picture/${widget.user.image}',
+                            'http://192.168.2.105:8000/profile-picture/${widget.user.image}',
                             height: 130,
                             width: 130,
                             fit: BoxFit.cover,

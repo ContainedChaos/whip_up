@@ -506,7 +506,7 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
 
 
         Response response = await dio.post(
-          'http://192.168.2.104:8000/upload-recipe-image/',
+          'http://192.168.2.105:8000/upload-recipe-image/',
           data: formData,
           options: Options(headers: {'Authorization': token}),
         );
@@ -772,7 +772,7 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
     List<RecipeStep> steps,
     String imageUrl,
   ) async {
-    final apiUrl = 'http://192.168.2.104:8000/addrecipe/';
+    final apiUrl = 'http://192.168.2.105:8000/addrecipe/';
 
     final Map<String, dynamic> recipeData = {
       "userId": userId,

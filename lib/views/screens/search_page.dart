@@ -30,7 +30,7 @@ class _SearchPageState extends State<SearchPage> {
     var query = searchInputController.text;
     if (query.isEmpty) return;
 
-    var url = Uri.parse('http://192.168.2.104:8000/search/?query=${Uri.encodeComponent(query)}');
+    var url = Uri.parse('http://192.168.2.105:8000/search/?query=${Uri.encodeComponent(query)}');
 
     // Fetch the access token
     final Map<String, dynamic> userData = await AuthService().getUserData();

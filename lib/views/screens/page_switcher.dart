@@ -9,7 +9,7 @@ import 'package:whip_up/views/widgets/custom_bottom_navigation_bar.dart';
 import 'package:whip_up/views/screens/NotificationPage.dart';
 import 'my_recipes_page.dart';
 import 'package:flutter/material.dart';
- // Import the NotificationsScreen file
+// Import the NotificationsScreen file
 
 class PageSwitcher extends StatefulWidget {
   final String userEmail;
@@ -40,43 +40,24 @@ class _PageSwitcherState extends State<PageSwitcher> {
     ];
   }
 
-  // _onItemTapped(int index) {
-  //   setState(() {
-  //     _selectedIndex = index;
-  //   });
-  // //
-  //   if (index == 4) {
-  //     Navigator.push(
-  //       context,
-  //       MaterialPageRoute(builder: (context) => NotificationsScreen(userId: widget.userId)),
-  //     );
-  //   }
-  // }
 
   _onItemTapped(int index) {
-    if (index == 4) { // Assuming 4 is the index of NotificationsScreen in your bottom navbar
-      // Directly update the state to switch to the NotificationsScreen
-      setState(() {
-        _selectedIndex = index;
-      });
-    } else {
-// Handle other tabs normally
-      setState(() {
-        _selectedIndex = index;
-      });
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  Future<bool> _onWillPop() async {
+    if (_selectedIndex != 0) {
+      _onItemTapped(0); // Redirect to the Home page when pressing the back button on any screen
     }
+    return false; // Prevent exiting the app or navigating back from the Home page
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () async {
-        if (_selectedIndex == 4) {
-          _onItemTapped(0); // Navigate to the Home page when pressing the back button on NotificationsScreen
-          return false;
-        }
-        return true;
-      },
+      onWillPop: _onWillPop,
       child: Scaffold(
         extendBody: true,
         body: Stack(

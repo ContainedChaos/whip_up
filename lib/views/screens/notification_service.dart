@@ -16,7 +16,7 @@ class NotificationService {
 
   Future<List<NotificationModel>> getNotifications(String userId) async {
     final response = await http.get(
-      Uri.parse('http://192.168.0.100:8000/notifications/$userId/'),
+      Uri.parse('http://192.168.2.105:8000/notifications/$userId/'),
     );
     if (response.statusCode == 200) {
       List<dynamic> notificationsJson = jsonDecode(response.body);
@@ -31,7 +31,7 @@ class NotificationService {
 
   // Future<void> markNotificationAsRead(String notificationId) async {
   //   final response = await http.patch(
-  //     Uri.parse('http://192.168.0.100:8000/notifications/$notificationId/read'),
+  //     Uri.parse('http://192.168.2.105:8000/notifications/$notificationId/read'),
   //   );
   //   if (response.statusCode != 200) {
   //     throw Exception('Failed to mark notification as read');
@@ -41,7 +41,7 @@ class NotificationService {
   Future<void> markAllNotificationsAsRead(String userId) async {
     final response = await http.patch(
       Uri.parse(
-          'http://192.168.0.100:8000/notifications/mark-all-read/$userId'),
+          'http://192.168.2.105:8000/notifications/mark-all-read/$userId'),
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to mark notifications as read');
@@ -50,7 +50,7 @@ class NotificationService {
 
   Future<void> markNotificationAsRead(String notificationId) async {
     final response = await http.patch(
-      Uri.parse('http://192.168.0.100:8000/notifications/$notificationId/read'),
+      Uri.parse('http://192.168.2.105:8000/notifications/$notificationId/read'),
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to mark notification as read');
@@ -59,7 +59,7 @@ class NotificationService {
 
 
   Future<MyRecipe> fetchRecipeById(String recipeId) async {
-    final apiUrl = 'http://192.168.0.100:8000/getrecipe/$recipeId';
+    final apiUrl = 'http://192.168.2.105:8000/getrecipe/$recipeId';
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -86,7 +86,7 @@ class NotificationService {
 
   Future<int> getUnreadNotificationCount(String userId) async {
     final response = await http.get(
-      Uri.parse('http://192.168.0.100:8000/notifications/$userId/count'),
+      Uri.parse('http://192.168.2.105:8000/notifications/$userId/count'),
     );
     if (response.statusCode == 200) {
       return jsonDecode(response.body)['unread_count'];

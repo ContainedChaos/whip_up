@@ -31,7 +31,7 @@ class _PosterProfilePageState extends State<PosterProfilePage> {
       throw Exception('Invalid userId');
     }
 
-    final apiUrl = 'http://192.168.0.106'
+    final apiUrl = 'http://192.168.2.105'
         ':8000/getchefsrecipes/${widget.userId}/';
 
     final response = await http.get(Uri.parse(apiUrl));
@@ -72,7 +72,7 @@ class _PosterProfilePageState extends State<PosterProfilePage> {
   }
 
   Future<Map<String, dynamic>> fetchProfileData() async {
-    final apiUrl = 'http://192.168.0.106:8000/posterprofile/${widget.userId}/';
+    final apiUrl = 'http://192.168.2.105:8000/posterprofile/${widget.userId}/';
 
     final response = await http.get(Uri.parse(apiUrl));
 
@@ -125,7 +125,7 @@ class _PosterProfilePageState extends State<PosterProfilePage> {
                       Container(
                         margin: EdgeInsets.only(left:16, right: 16, bottom: 25),
                         child: CircleAvatar(
-                          backgroundImage: NetworkImage('http://192.168.0.106:8000/profile-picture/${data['imageUrl']}'),
+                          backgroundImage: NetworkImage('http://192.168.2.105:8000/profile-picture/${data['imageUrl']}'),
                           radius: 50,
                         ),
                       ),
