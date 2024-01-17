@@ -6,14 +6,15 @@ import 'package:whip_up/views/screens/explore_page.dart';
 import 'package:whip_up/views/screens/home_page.dart';
 import 'package:whip_up/views/utils/AppColor.dart';
 import 'package:whip_up/views/widgets/custom_bottom_navigation_bar.dart';
-
+import 'package:whip_up/views/screens/NotificationPage.dart';
 import 'my_recipes_page.dart';
+import 'package:flutter/material.dart';
+ // Import the NotificationsScreen file
 
 class PageSwitcher extends StatefulWidget {
   final String userEmail;
   final String userName;
   final String userId;
-
 
   PageSwitcher({required this.userEmail, required this.userName, required this.userId});
 
@@ -23,29 +24,64 @@ class PageSwitcher extends StatefulWidget {
 
 class _PageSwitcherState extends State<PageSwitcher> {
   int _selectedIndex = 0;
+  List<Widget> pages = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize the list of pages
+    pages = [
+      HomePage(userEmail: widget.userEmail, userName: widget.userName),
+      RecipeDetailsPage(userId: widget.userId, userEmail: widget.userEmail, userName: widget.userName),
+      MyRecipesPage(userId: widget.userId),
+      BookmarksPage(),
+      NotificationsScreen(userId: widget.userId), // NotificationsScreen added to the list
+    ];
+  }
+
+  // _onItemTapped(int index) {
+  //   setState(() {
+  //     _selectedIndex = index;
+  //   });
+  // //
+  //   if (index == 4) {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => NotificationsScreen(userId: widget.userId)),
+  //     );
+  //   }
+  // }
 
   _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == 4) { // Assuming 4 is the index of NotificationsScreen in your bottom navbar
+      // Directly update the state to switch to the NotificationsScreen
+      setState(() {
+        _selectedIndex = index;
+      });
+    } else {
+// Handle other tabs normally
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        return false;
+        if (_selectedIndex == 4) {
+          _onItemTapped(0); // Navigate to the Home page when pressing the back button on NotificationsScreen
+          return false;
+        }
+        return true;
       },
       child: Scaffold(
         extendBody: true,
         body: Stack(
           children: [
-            [
-              HomePage(userEmail: widget.userEmail, userName: widget.userName),
-              RecipeDetailsPage(userId: widget.userId, userName: widget.userName, userEmail: widget.userEmail),
-              MyRecipesPage(userId: widget.userId),
-              BookmarksPage(),
-            ][_selectedIndex],
+            pages[_selectedIndex],
             BottomGradientWidget(),
           ],
         ),
@@ -54,6 +90,7 @@ class _PageSwitcherState extends State<PageSwitcher> {
     );
   }
 }
+
 
 class BottomGradientWidget extends StatelessWidget {
   @override

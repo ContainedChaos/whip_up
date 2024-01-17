@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whip_up/Screens/Home/presentation/home_screen.dart';
@@ -13,16 +14,30 @@ import 'package:whip_up/Screens/Welcome/welcome_screen.dart';
 import 'package:whip_up/services/auth_service.dart';
 import 'package:whip_up/views/screens/home_page.dart';
 
+import '../../../views/screens/notification_provider.dart';
+import '../../../views/screens/notification_service.dart';
 import '../../../views/screens/page_switcher.dart';
+import 'package:provider/provider.dart';
 
 class Body extends StatefulWidget {
   @override
   _BodyState createState() => _BodyState();
 }
 
+
 class _BodyState extends State<Body> {
   String _email = "";
   String _password = "";
+
+  Future<void> _fetchAndSetUnreadNotificationCount(String userId) async {
+    try {
+      final notificationService = NotificationService('http://192.168.0.100:8000');
+      final count = await notificationService.getUnreadNotificationCount(userId);
+      Provider.of<NotificationProvider>(context, listen: false).setUnreadCount(count);
+    } catch (error) {
+      print('Error fetching notification count: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,34 +85,39 @@ class _BodyState extends State<Body> {
                 final apiService = ApiService();
                 try {
                   var result = await apiService.loginUser(_email, _password);
-                  print(result['detail']);
 
                   // Check if 'message' is "Login Successful"
-                  if (result['message'] == 'Login Successful') {
-                    String userId = result['user_id'];
-                    String userEmail = result['email'];
-                    String userName = result['username'];
-                    String accessToken = result['access_token'];
-                    String image = result['imageUrl'];
+                  if (result.containsKey('message') && result['message'] == 'Login Successful') {
+                    String userId = result['user_id'] ?? ''; // Provide a default value
+                    String userEmail = result['email'] ?? ''; // Provide a default value
+                    String userName = result['username'] ?? ''; // Provide a default value
+                    String accessToken = result['access_token'] ?? ''; // Provide a default value
+                    String image = result['imageUrl'] ?? ''; // Provide a default value
                     AuthService().storeUserData(userId, userEmail, userName, accessToken, image);
+
+                    await _fetchAndSetUnreadNotificationCount(userId);
+
+
                     // Navigate to HomePage after successful login
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
                         builder: (context) => PageSwitcher(
-                          userEmail: userEmail, // Provide the user's email
+                          userEmail: userEmail,
                           userName: userName,
-                          userId: userId,// Provide the user's name
+                          userId: userId,
                         ),
                       ),
                     );
-
-                  } else if (result['detail'] == 'No verified account with this email.') {
+                  } else if (result.containsKey('detail')) {
+                    // Show snackbar with detail message
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(result['detail'])),
+                      SnackBar(content: Text(result['detail']!)),
                     );
-                  } else if (result['detail'] == 'Invalid password.') {
+                  } else {
+                    // Handle unexpected result
+                    print('Unexpected result: $result');
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(result['detail'])),
+                      SnackBar(content: Text('An unexpected error occurred.')),
                     );
                   }
                 } catch (error) {
@@ -108,6 +128,7 @@ class _BodyState extends State<Body> {
                 }
               },
             ),
+
 
             SizedBox(
               height: size.height * 0.03,
