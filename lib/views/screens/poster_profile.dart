@@ -88,7 +88,7 @@ class _PosterProfilePageState extends State<PosterProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Chef\'s Profile', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.teal.shade900,
+        backgroundColor: Colors.grey.shade900,
         centerTitle: false,
         automaticallyImplyLeading: false,
         // leading: IconButton(
@@ -115,7 +115,7 @@ class _PosterProfilePageState extends State<PosterProfilePage> {
               children: [
                 // Top Section with Background Color
                 Container(
-                  color: Colors.teal.shade900, // Set your desired background color
+                  color: Colors.grey.shade900, // Set your desired background color
                   height: MediaQuery.of(context).size.height * 0.18, // Adjust the percentage as needed
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Row(

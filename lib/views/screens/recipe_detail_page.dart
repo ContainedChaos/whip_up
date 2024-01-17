@@ -57,6 +57,7 @@ Future<void> postReview(String recipeId, String userId, String comment, double r
     // Handle success
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        backgroundColor: Colors.green,
         content: Text('Your review has been posted!'),
         duration: Duration(seconds: 3),
       ),
@@ -117,6 +118,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0), // Adjust the value as needed
+          ),
+          backgroundColor: Colors.yellow.shade50,
           content: SingleChildScrollView( // Ensure the dialog is scrollable if content exceeds screen height
             child: ListBody(
               children: [
@@ -128,7 +133,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                   decoration: InputDecoration(hintText: 'Write your review here...'),
                 ),
                 SizedBox(height: 20), // Provide some spacing between the text field and the rating bar
-                Text('Rate the recipe:', style: TextStyle(fontWeight: FontWeight.bold)),
                 RatingBar.builder(
                   initialRating: 0,
                   minRating: 1,
@@ -152,7 +156,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(color: Colors.black)),
             ),
             TextButton(
               onPressed: () async {
@@ -164,7 +168,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                   // Handle the error, such as showing a snackbar with the error message
                 }
               },
-              child: Text('Post Review'),
+              child: Text('Post Review', style: TextStyle(color: Colors.black)),
             ),
           ],
         );
@@ -409,7 +413,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60),
+        preferredSize: Size.fromHeight(30),
         child: AnimatedContainer(
           color: appBarColor,
           duration: Duration(milliseconds: 200),
@@ -423,37 +427,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                 Navigator.of(context).pop();
               },
             ),
-            actions: [
-              IconButton(
-                onPressed: () {
-                  likeRecipe(user_id, widget.data.id);
-                },
-                icon: SvgPicture.asset(
-                  _isLiked == true
-                      ? 'assets/icons/heartu-filled.svg' // Show filled bookmark if _isBookmarked is true
-                      : 'assets/icons/heartu.svg', // Use your heart icon
-                  color: _isLiked == true ? Colors.red.shade700 : Colors.white,
-                   // Set the width of the icon
-                  height: 40,
-                  // Set the color based on the like status
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  bookmarkRecipe(user_id, widget.data.id);
-                },
-                icon: SvgPicture.asset(
-                  _isBookmarked == true
-                      ? 'assets/icons/bookmark-filled.svg' // Show filled bookmark if _isBookmarked is true
-                      : 'assets/icons/bookmark.svg',
-                  // Show regular bookmark if _isBookmarked is false
-                  color: _isBookmarked == true ? Colors.yellow.shade600 : Colors
-                      .white,
-                  width: 60, // Set the width of the icon
-                  height: 60,
-                ),
-              ),
-            ],
             systemOverlayStyle: SystemUiOverlayStyle.light,
           ),
         ),
@@ -462,6 +435,16 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          Visibility(
+            visible: showFAB(_tabController),
+            child: FloatingActionButton(
+              onPressed: () => _showReviewDialog(context, widget.data.id, user_id), // Call the showDialog here
+              child: Icon(Icons.edit, color: Colors.white,),
+              backgroundColor: Colors.grey.shade900,
+              shape: CircleBorder(),
+            ),
+          ),
+          SizedBox(height: 15),
           FloatingActionButton(
             onPressed: () async {
               if (_speechToText.isNotListening && !_isListeningForCommands && _currentStepIndex == 0) {
@@ -486,66 +469,12 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
               });
             },
             tooltip: 'Listen',
-            child: Icon(_speechToText.isNotListening ? Icons.mic_off : Icons.mic),
-            backgroundColor: _speechToText.isNotListening ? Colors.blue : Colors.red,
-          ),
-          Visibility(
-            visible: showFAB(_tabController),
-            child: FloatingActionButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      content: Container (
-                        width: MediaQuery.of(context).size.width,
-                        height: 150,
-                        color: Colors.white,
-                        child: TextField(
-                          keyboardType: TextInputType.multiline,
-                          minLines: 6,
-                          decoration: InputDecoration(
-                            hintText: 'Write your review here...',
-                          ),
-                          maxLines: null,
-                        ),
-                      ),
-                      actions: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 120,
-                              child: TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text('cancel'),
-                                style: TextButton.styleFrom(
-                                  primary: Colors.grey[600],
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Container(
-                                child: ElevatedButton(
-                                  onPressed: () {},
-                                  child: Text('Post Review'),
-                                  style: ElevatedButton.styleFrom(
-                                    primary: Colors.grey.shade900,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    );
-                  },
-                );
-              },
-              child: Icon(Icons.edit),
-              backgroundColor: Colors.grey.shade900,
+            child: Icon(
+                _speechToText.isNotListening ? Icons.mic_off : Icons.mic,
+                color: Colors.white,
             ),
+            backgroundColor: _speechToText.isNotListening ? Colors.lightBlue : Colors.red,
+            shape: CircleBorder(),
           ),
         ],
       ),
@@ -560,24 +489,163 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
             // onTap: () {
             //   Navigator.of(context).push(MaterialPageRoute(builder: (context) => FullScreenImage(image: Image.asset(widget.data.photo, fit: BoxFit.cover))));
             // },
-            child: Container(
-              height: 280,
-              width: MediaQuery
-                  .of(context)
-                  .size
-                  .width,
-              decoration: BoxDecoration(
-                  image: DecorationImage(
+            child: Stack(
+              children: [
+                // Section 1 - Recipe Image with Gradient Overlay
+                Container(
+                  height: 280,
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
                       image: NetworkImage(imageUrl),
-                      fit: BoxFit.cover)),
-              child: Container(
-                decoration: BoxDecoration(gradient: AppColor.linearBlackTop),
-                height: 280,
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width,
-              ),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                // Gradient Overlay
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColor.linearBlackTop,
+                    ),
+                  ),
+                ),
+                // Column for Icons
+                Positioned(
+                  bottom: 5,
+                  right: 5,
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          likeRecipe(user_id, widget.data.id);
+                        },
+                        child: SvgPicture.asset(
+                          _isLiked == true
+                              ? 'assets/icons/heartu-filled.svg'
+                              : 'assets/icons/heartu.svg',
+                          color: _isLiked == true ? Colors.red.shade700 : Colors.white,
+                          height: 40,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: () {
+                          bookmarkRecipe(user_id, widget.data.id);
+                        },
+                        child: SvgPicture.asset(
+                          _isBookmarked == true
+                              ? 'assets/icons/bookmark-filled.svg'
+                              : 'assets/icons/bookmark.svg',
+                          color: _isBookmarked == true ? Colors.yellow.shade600 : Colors.white,
+                          height: 40,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.0), // Adjust the value as needed
+                                ),
+                                backgroundColor: Colors.yellow.shade50,
+                                title: Center(
+                                  child: Text(
+                                    'Voice Commands',
+                                    style: TextStyle(
+                                      fontSize: 21,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                                content: Container(
+                                  width: double.maxFinite,
+                                  child: ListView(
+                                    shrinkWrap: true,
+                                    children: [
+                                      ListTile(
+                                        leading: Icon(Icons.play_arrow, color: Colors.green, size: 30),
+                                        title: Text(
+                                          'Read the steps',
+                                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),
+                                        ),
+                                        subtitle: Text(
+                                          'Reads the first step.',
+                                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                                        ),
+                                      ),
+                                      ListTile(
+                                        leading: Icon(Icons.arrow_forward, color: Colors.blue, size: 30),
+                                        title: Text(
+                                          'Next step',
+                                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),
+                                        ),
+                                        subtitle: Text(
+                                          'Moves to the next step.',
+                                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                                        ),
+                                      ),
+                                      ListTile(
+                                        leading: Icon(Icons.arrow_back, color: Colors.orange, size: 30),
+                                        title: Text(
+                                          'Go back',
+                                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),
+                                        ),
+                                        subtitle: Text(
+                                          'Goes back to the previous step.',
+                                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                                        ),
+                                      ),
+                                      ListTile(
+                                        leading: Icon(Icons.replay, color: Colors.red, size: 30),
+                                        title: Text(
+                                          'Again',
+                                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),
+                                        ),
+                                        subtitle: Text(
+                                          'Repeats the current step.',
+                                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                  onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text(
+                              'Close',
+                              style: TextStyle(fontSize: 18, color: Colors.white),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                              primary: Colors.black, // Set your desired background color
+                              shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5), // Adjust the border radius as needed
+                              ),
+                              ),
+                              ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: SvgPicture.asset(
+                          'assets/icons/inf.svg',
+                          color: Colors.white,
+                          height: 47,
+                        ),
+                      ),
+
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           // Section 2 - Recipe Info
@@ -586,7 +654,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                 .of(context)
                 .size
                 .width,
-            padding: EdgeInsets.only(top: 20, bottom: 30, left: 16, right: 16),
+            padding: EdgeInsets.only(top: 20, bottom: 17, left: 16, right: 16),
             color: Colors.grey.shade900,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -633,7 +701,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                       margin: EdgeInsets.only(left: 5),
                       child: Text(
                         widget.total_likes.toString(),
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                        style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
                     ),
                     SizedBox(width: 20),
@@ -660,9 +728,9 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                           builder: (BuildContext context) {
                             int servings = noOfServings; // Default value for servings
                             return AlertDialog(
-                              backgroundColor: AppColor.secondarySoft,
+                              backgroundColor: Colors.yellow.shade50,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12), // Adjust the borderRadius as needed
+                                borderRadius: BorderRadius.circular(5), // Adjust the borderRadius as needed
                               ),
                               //title: Text('Customize Servings'),
                               content: Column(
@@ -676,9 +744,9 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                                     decoration: InputDecoration(
                                       hintText: 'Enter number of servings',
                                       contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10), // Adjust padding
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
+                                      // border: OutlineInputBorder(
+                                      //   borderRadius: BorderRadius.circular(8),
+                                      // ),
                                     ),
                                     onChanged: (value) {
                                       // Handle changes in the input field
@@ -692,7 +760,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                                   onPressed: () {
                                     Navigator.of(context).pop(); // Close the dialog
                                   },
-                                  child: Text('Cancel'),
+                                  child: Text('Cancel', style: TextStyle(color: Colors.black87)),
                                 ),
                                 ElevatedButton(
                                   onPressed: () {
@@ -704,12 +772,12 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                                     Navigator.of(context).pop(); // Close the dialog
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    primary: Colors.grey.shade700,
+                                    primary: Colors.grey.shade800,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
-                                  child: Text('Apply'),
+                                  child: Text('Apply', style: TextStyle(color: Colors.white)),
                                 ),
                               ],
                             );
@@ -718,57 +786,58 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                       },
                       style: TextButton.styleFrom(
                         primary: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                         backgroundColor: Colors.grey.shade700,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(15),
                         ),
                       ),
-                      child: Text(
-                        'Customize',
-                        style: TextStyle(fontSize: 14),
+                      child: SvgPicture.asset(
+                        'assets/icons/wand.svg', // Replace with the actual path to your SVG icon
+                        width: 20,
+                        height: 20,
+                        color: Colors.white,
                       ),
                     ),
-                    ],
+                  ],
                 ),
 
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => PosterProfilePage(userId: widget.data.userId),
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.grey.shade900,
-                    padding: EdgeInsets.all(16),
-                  ),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => PosterProfilePage(userId: widget.data.userId),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      widget.data.username,
+                Row(
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Recipe Title
+                    Text(
+                      widget.data.title,
                       style: TextStyle(
-                        fontSize: 14,
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'inter',
                       ),
                     ),
-                  ),
+                    // Username with "@" tag
+                    GestureDetector(
+                      onTap: () {
+                        // Handle the click action (navigate to the user's profile, etc.)
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => PosterProfilePage(userId: widget.data.userId),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        '  @${widget.data.username}',
+                        style: TextStyle(
+                          fontSize: 14, // Adjust the font size as needed
+                          color: Colors.lightBlue.shade200,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                // Recipe Title
-                Container(
-                  margin: EdgeInsets.only(bottom: 12, top: 16),
-                  child: Text(
-                    widget.data.title,
-                    style: TextStyle(color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'inter'),
-                  ),
-                ),
+
+                SizedBox(height: 10),
                 // Recipe Description
                 Row(
                   children: [
@@ -789,14 +858,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                 Wrap(
                   children: widget.data.tags.map((tag) {
                     return Container(
-                      margin: EdgeInsets.only(right: 17),
+                      margin: EdgeInsets.only(right: 10, bottom: 10),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade800, // Customize the color
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.white, // Customize the border color
-                          width: 1, // Customize the border width
-                        ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(8), // Add padding here
@@ -884,9 +949,11 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> with TickerProvider
                           child: Text(
                             customized == 0
                                 ? data.quantity
-                                : newQuantity % 1 == 0
+                                : newQuantity > 0
+                                ? newQuantity % 1 == 0
                                 ? '${newQuantity.toInt()} $unit'
-                                : '${newQuantity.toStringAsFixed(2)} $unit',
+                                : '${newQuantity.toStringAsFixed(2)} $unit'
+                                : '$unit',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,

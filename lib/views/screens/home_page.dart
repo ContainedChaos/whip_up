@@ -22,7 +22,7 @@ import '../../model/user.dart';
 import '../../services/auth_service.dart';
 
 Future<List<MyRecipe>> fetchRecipes() async {
-  final apiUrl = 'http://192.168.2.105:8000/getrecipes/';
+  final apiUrl = 'http://192.168.0.106:8000/getrecipes/';
 
   final Map<String, dynamic> userData = await AuthService().getUserData();
   final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -71,7 +71,7 @@ Future<List<MyRecipe>> fetchRecipes() async {
 }
 
 Future<List<MyRecipe>> fetchRecommendations() async {
-  final apiUrl = 'http://192.168.2.105:8000/recommendations/';
+  final apiUrl = 'http://192.168.0.106:8000/recommendations/';
 
   final Map<String, dynamic> userData = await AuthService().getUserData();
   final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -120,6 +120,15 @@ Future<List<MyRecipe>> fetchRecommendations() async {
   }
 }
 
+List<MyRecipe> filterTopLikedRecipes(List<MyRecipe> allRecipes) {
+  allRecipes.sort((a, b) => b.total_likes.compareTo(a.total_likes));
+
+  final topLikedRecipes = allRecipes.take(10).toList();
+
+  return topLikedRecipes;
+}
+
+
 class HomePage extends StatefulWidget {
   final String userName;
   final String userEmail;
@@ -140,12 +149,37 @@ class _HomePageState extends State<HomePage> {
 
   late Future<List<MyRecipe>> futureRecipes;
   late Future<List<MyRecipe>> recommendedRecipes;
+  late String profilePhotoUrl = '';
+  late Future<List<MyRecipe>> fetchedRecipes = Future.value([]);
 
   @override
   void initState() {
     super.initState();
+    getProfilePhotoUrl();
     futureRecipes = fetchRecipes();
+
+    futureRecipes.then((recipes) {
+      fetchedRecipes = Future.value(filterTopLikedRecipes(recipes));
+      setState(() {});
+    });
+
     recommendedRecipes = fetchRecommendations();
+  }
+
+  Future<void> _refresh() async {
+    // Add the logic to fetch and refresh your data here
+    setState(() {
+      futureRecipes = fetchRecipes();
+      recommendedRecipes = fetchRecommendations();
+    });
+  }
+
+  void getProfilePhotoUrl() async {
+    try {
+      profilePhotoUrl = await AuthService().getUserProfileImageUrl() ?? '';
+    } catch (error) {
+      print('Error getting profile photo URL: $error');
+    }
   }
 
   @override
@@ -154,12 +188,17 @@ class _HomePageState extends State<HomePage> {
       appBar: CustomAppBar(
         title: Text('WhipUp', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w700, color: Colors.white)),
         showProfilePhoto: true,
-        profilePhoto: AssetImage('assets/images/pp.jpg'),
-        profilePhotoOnPressed: () {
+        profilePhoto: profilePhotoUrl.isNotEmpty
+            ? NetworkImage('http://192.168.0.106:8000/profile-picture/$profilePhotoUrl')
+            : null, // Provide a default image asset
+
+    profilePhotoOnPressed: () {
           Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProfilePage(userEmail: widget.userEmail, userName: widget.userName)));
         },
       ),
-      body: ListView(
+      body: RefreshIndicator(
+      onRefresh: _refresh,
+      child: ListView(
         shrinkWrap: true,
         physics: BouncingScrollPhysics(),
         children: [
@@ -210,7 +249,7 @@ class _HomePageState extends State<HomePage> {
                       height: 220,
                       child: Center(
                         child: FutureBuilder<List<MyRecipe>>(
-                          future: futureRecipes,
+                          future: fetchedRecipes,
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               // Loading state
@@ -322,6 +361,13 @@ class _HomePageState extends State<HomePage> {
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'inter'),
                       ),
                     ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => NewlyPostedPage(recipes: futureRecipes)));
+                      },
+                      child: Text('see all'),
+                      style: TextButton.styleFrom(primary: Colors.black, textStyle: TextStyle(fontWeight: FontWeight.w400, fontSize: 14)),
+                    ),
                   ],
                 ),
                 // Content - Use ListView.builder to display newly posted recipes
@@ -361,6 +407,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    ),
     );
   }
 }

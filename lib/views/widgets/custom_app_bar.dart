@@ -5,7 +5,7 @@ import 'package:whip_up/views/utils/AppColor.dart';
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget title;
   final bool showProfilePhoto;
-  final ImageProvider profilePhoto;
+  final ImageProvider? profilePhoto;
   final VoidCallback profilePhotoOnPressed;
 
   CustomAppBar({required this.title, required this.showProfilePhoto, required this.profilePhoto, required this.profilePhotoOnPressed});
@@ -34,7 +34,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(100),
                   color: Colors.white,
-                  image: DecorationImage(image: profilePhoto, fit: BoxFit.cover),
+                  image: DecorationImage(image: profilePhoto ?? AssetImage('assets/images/pp.jpg'), fit: BoxFit.cover),
                 ),
               ),
             ),
