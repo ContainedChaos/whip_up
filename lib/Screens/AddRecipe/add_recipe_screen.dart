@@ -90,7 +90,12 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Recipe Details'),
+        title: Text('Recipe Details',
+            style: TextStyle(
+                fontFamily: 'inter',
+                fontWeight: FontWeight.w500,
+                fontSize: 20,
+                color: Colors.white)),
         backgroundColor: Colors.grey.shade900,
       ),
       body: Padding(
@@ -501,7 +506,7 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
 
 
         Response response = await dio.post(
-          'http://192.168.0.107:8000/upload-recipe-image/',
+          'http://192.168.2.104:8000/upload-recipe-image/',
           data: formData,
           options: Options(headers: {'Authorization': token}),
         );
@@ -543,7 +548,12 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Ingredients and Steps'),
+        title: Text('Ingredients and Steps',
+            style: TextStyle(
+            fontFamily: 'inter',
+            fontWeight: FontWeight.w500,
+            fontSize: 20,
+            color: Colors.white)),
         backgroundColor: Colors.grey.shade900,
       ),
       body: Padding(
@@ -690,7 +700,7 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
                 ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16), // Add left and right padding
-                  child: Text('Submit'),
+                  child: Text('Submit', style: TextStyle(color: Colors.white)),
                 ),
               ),
             ),
@@ -762,7 +772,7 @@ class _IngredientsAndStepsPageState extends State<IngredientsAndStepsPage> {
     List<RecipeStep> steps,
     String imageUrl,
   ) async {
-    final apiUrl = 'http://192.168.0.107:8000/addrecipe/';
+    final apiUrl = 'http://192.168.2.104:8000/addrecipe/';
 
     final Map<String, dynamic> recipeData = {
       "userId": userId,

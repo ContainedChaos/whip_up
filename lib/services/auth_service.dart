@@ -17,6 +17,11 @@ class AuthService {
     prefs.setString(userImageKey, image);
   }
 
+  Future<String?> getUserProfileImageUrl() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(userImageKey);
+  }
+
   Future<String?> getUserEmail() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(userEmailKey);

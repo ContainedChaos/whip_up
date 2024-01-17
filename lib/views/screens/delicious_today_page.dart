@@ -32,9 +32,9 @@ class _DeliciousTodayPageState extends State<DeliciousTodayPage> {
         backgroundColor: Colors.grey.shade900,
         elevation: 0,
         centerTitle: true,
-        title: Text('Delicious Today', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16)),
+        title: Text('Delicious Today', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white)),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios),
+          icon: Icon(Icons.arrow_back_ios, color: Colors.white,),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -77,7 +77,7 @@ class _DeliciousTodayPageState extends State<DeliciousTodayPage> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   // While waiting for the data to be fetched, you can show a loading indicator.
-                  return CircularProgressIndicator();
+                  return LinearProgressIndicator();
                 } else if (snapshot.hasError) {
                   // If there's an error, you can display an error message.
                   return Text('Error: ${snapshot.error}');

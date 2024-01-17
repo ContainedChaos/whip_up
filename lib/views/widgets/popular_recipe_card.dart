@@ -14,7 +14,7 @@ class PopularRecipeCard extends StatelessWidget {
   PopularRecipeCard({required this.data});
   @override
   Widget build(BuildContext context) {
-    String basePath = 'http://192.168.0.107:8000/recipe-image/';
+    String basePath = 'http://192.168.2.104:8000/recipe-image/';
     String imagePath = data.imageUrl;
 
     String imageUrl = basePath + imagePath;

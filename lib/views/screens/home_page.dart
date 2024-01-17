@@ -22,7 +22,7 @@ import '../../model/user.dart';
 import '../../services/auth_service.dart';
 
 Future<List<MyRecipe>> fetchRecipes() async {
-  final apiUrl = 'http://192.168.0.107:8000/getrecipes/';
+  final apiUrl = 'http://192.168.0.106:8000/getrecipes/';
 
   final Map<String, dynamic> userData = await AuthService().getUserData();
   final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
@@ -60,6 +60,8 @@ Future<List<MyRecipe>> fetchRecipes() async {
         );
       }).toList(),
       imageUrl: map['imageUrl'],
+      total_likes: map['total_likes'],
+      username: map['username'],
     )).toList();
 
     return recipes;
@@ -67,6 +69,65 @@ Future<List<MyRecipe>> fetchRecipes() async {
     throw Exception('Failed to load recipes');
   }
 }
+
+Future<List<MyRecipe>> fetchRecommendations() async {
+  final apiUrl = 'http://192.168.0.106:8000/recommendations/';
+
+  final Map<String, dynamic> userData = await AuthService().getUserData();
+  final String accessToken = userData['access_token'] ?? ''; // Use a default value or handle null properly.
+  final String profilePicture = userData['imageUrl'] ?? '';
+
+  final response = await http.get(
+    Uri.parse(apiUrl),
+    headers: {
+      "Authorization": "Bearer $accessToken",
+    },
+  );
+
+  if (response.statusCode == 200) {
+    var data = jsonDecode(response.body);
+    List<Map<String, dynamic>> recipeData = List<Map<String, dynamic>>.from(data['recipes']);
+
+    List<MyRecipe> recipes = recipeData.map((map) => MyRecipe(
+        id: map['_id'],
+        userId: map['userId'],
+        title: map['title'],
+        servings: map['servings'],
+        difficulty: map['difficulty'],
+        cookTime: map['cookTime'],
+        cuisine: map['cuisine'],
+        tags: List<String>.from(map['tags']),
+        ingredients: (map['ingredients'] as List<dynamic>).map((ingredientMap) {
+          return RecipeIngredient(
+            name: ingredientMap['name'],
+            quantity: ingredientMap['quantity'],
+          );
+        }).toList(),
+        steps: (map['steps'] as List<dynamic>).map((stepMap) {
+          return RecipeStep(
+            description: stepMap['description'],
+          );
+        }).toList(),
+        imageUrl: map['imageUrl'],
+        total_likes: map['total_likes'],
+        username: map['username'],
+      )
+    ).toList();
+    print('Recipes: $recipes');
+    return recipes;
+  } else {
+    throw Exception('Failed to load recipes');
+  }
+}
+
+List<MyRecipe> filterTopLikedRecipes(List<MyRecipe> allRecipes) {
+  allRecipes.sort((a, b) => b.total_likes.compareTo(a.total_likes));
+
+  final topLikedRecipes = allRecipes.take(10).toList();
+
+  return topLikedRecipes;
+}
+
 
 class HomePage extends StatefulWidget {
   final String userName;
@@ -87,25 +148,57 @@ class _HomePageState extends State<HomePage> {
   final List<Recipe> newlyPostedRecipe = RecipeHelper.newlyPostedRecipe;
 
   late Future<List<MyRecipe>> futureRecipes;
+  late Future<List<MyRecipe>> recommendedRecipes;
+  late String profilePhotoUrl = '';
+  late Future<List<MyRecipe>> fetchedRecipes = Future.value([]);
 
   @override
   void initState() {
     super.initState();
+    getProfilePhotoUrl();
     futureRecipes = fetchRecipes();
+
+    futureRecipes.then((recipes) {
+      fetchedRecipes = Future.value(filterTopLikedRecipes(recipes));
+      setState(() {});
+    });
+
+    recommendedRecipes = fetchRecommendations();
+  }
+
+  Future<void> _refresh() async {
+    // Add the logic to fetch and refresh your data here
+    setState(() {
+      futureRecipes = fetchRecipes();
+      recommendedRecipes = fetchRecommendations();
+    });
+  }
+
+  void getProfilePhotoUrl() async {
+    try {
+      profilePhotoUrl = await AuthService().getUserProfileImageUrl() ?? '';
+    } catch (error) {
+      print('Error getting profile photo URL: $error');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: Text('WhipUp', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w700)),
+        title: Text('WhipUp', style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w700, color: Colors.white)),
         showProfilePhoto: true,
-        profilePhoto: AssetImage('assets/images/pp.jpg'),
-        profilePhotoOnPressed: () {
+        profilePhoto: profilePhotoUrl.isNotEmpty
+            ? NetworkImage('http://192.168.0.106:8000/profile-picture/$profilePhotoUrl')
+            : null, // Provide a default image asset
+
+    profilePhotoOnPressed: () {
           Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProfilePage(userEmail: widget.userEmail, userName: widget.userName)));
         },
       ),
-      body: ListView(
+      body: RefreshIndicator(
+      onRefresh: _refresh,
+      child: ListView(
         shrinkWrap: true,
         physics: BouncingScrollPhysics(),
         children: [
@@ -156,7 +249,7 @@ class _HomePageState extends State<HomePage> {
                       height: 220,
                       child: Center(
                         child: FutureBuilder<List<MyRecipe>>(
-                          future: futureRecipes,
+                          future: fetchedRecipes,
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               // Loading state
@@ -212,17 +305,38 @@ class _HomePageState extends State<HomePage> {
                 // Content
                 Container(
                   height: 174,
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    physics: BouncingScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: recommendationRecipe.length,
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    separatorBuilder: (context, index) {
-                      return SizedBox(width: 16);
-                    },
-                    itemBuilder: (context, index) {
-                      return RecommendationRecipeCard(data: recommendationRecipe[index]);
+                  child: FutureBuilder<List<MyRecipe>>(
+                    future: recommendedRecipes,  // Assuming futureRecommendations is the Future<List<MyRecipe>> for recommended recipes
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        // Loading state
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else if (snapshot.hasError) {
+                        // Error state
+                        return Text('Error: ${snapshot.error}');
+                      } else if (snapshot.hasData) {
+                        // Data available
+                        List<MyRecipe> recommendedRecipes = snapshot.data!;
+                        return ListView.separated(
+                          shrinkWrap: true,
+                          physics: BouncingScrollPhysics(),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: recommendedRecipes.length,
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          separatorBuilder: (context, index) {
+                            return SizedBox(width: 16);
+                          },
+                          itemBuilder: (context, index) {
+                            // Display recommended recipe data using RecommendationRecipeCard.
+                            return RecommendationRecipeCard(data: recommendedRecipes[index]);
+                          },
+                        );
+                      } else {
+                        // No data available
+                        return Text('No recommendations available');
+                      }
                     },
                   ),
                 )
@@ -246,6 +360,13 @@ class _HomePageState extends State<HomePage> {
                         'Newly Posted',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'inter'),
                       ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => NewlyPostedPage(recipes: futureRecipes)));
+                      },
+                      child: Text('see all'),
+                      style: TextButton.styleFrom(primary: Colors.black, textStyle: TextStyle(fontWeight: FontWeight.w400, fontSize: 14)),
                     ),
                   ],
                 ),
@@ -286,6 +407,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    ),
     );
   }
 }

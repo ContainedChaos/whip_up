@@ -32,7 +32,7 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
 
 
   Future<List<MyRecipe>> fetchMyRecipes() async {
-    final apiUrl = 'http://192.168.0.107'
+    final apiUrl = 'http://192.168.2.105'
         ':8000/getmyrecipes/';
 
     final Map<String, dynamic> userData = await AuthService().getUserData();
@@ -70,6 +70,8 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
           );
         }).toList(),
         imageUrl: map['imageUrl'],
+        total_likes: map['total_likes'],
+        username: map['username'],
       )).toList();
 
       return myRecipes;
@@ -90,7 +92,8 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
             style: TextStyle(
                 fontFamily: 'inter',
                 fontWeight: FontWeight.w500,
-                fontSize: 20)),
+                fontSize: 20,
+            color: Colors.white)),
         systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       body: ListView(

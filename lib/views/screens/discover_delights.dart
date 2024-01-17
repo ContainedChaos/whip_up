@@ -44,7 +44,7 @@ class _DiscoverDelightsPageState extends State<DiscoverDelightsPage> {
         centerTitle: true,
         title: Text(capitalize(widget.categoryTag), style: TextStyle(fontFamily: 'inter', fontWeight: FontWeight.w600, fontSize: 16, color: Colors.white)),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios),
+          icon: Icon(Icons.arrow_back_ios, color: Colors.white,),
           onPressed: () {
             Navigator.of(context).pop();
           },

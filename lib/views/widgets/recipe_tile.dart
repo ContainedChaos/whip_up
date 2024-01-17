@@ -12,13 +12,14 @@ class RecipeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String basePath = 'http://192.168.0.107:8000/recipe-image/'; // Change this to your actual base URL
+    String basePath = 'http://192.168.2.104:8000/recipe-image/'; // Change this to your actual base URL
     String imagePath = data.imageUrl; // Assuming data.imageUrl is the relative path
 
     String imageUrl = basePath + imagePath;
 
     return GestureDetector(
       onTap: () {
+        print("RECIPEID in RECIPETILE: " + data.id);
         Navigator.of(context).push(MaterialPageRoute(builder: (context) => RecipeDetailPage(data: data)));
       },
       child: Container(
@@ -88,6 +89,22 @@ class RecipeTile extends StatelessWidget {
                             style: TextStyle(fontSize: 12),
                           ),
                         ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        SvgPicture.asset(
+                          'assets/icons/like.svg',
+                          color: Colors.black,
+                          width: 12,
+                          height: 12,
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(left: 5),
+                          child: Text(
+                            data.total_likes.toString(),
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        )
                       ],
                     ),
                   ],
